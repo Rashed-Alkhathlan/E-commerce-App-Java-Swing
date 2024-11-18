@@ -4,7 +4,7 @@ import GUI.MyFrame;
 import java.util.UUID;
 
 import Services.Service;
-import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 
 
 public class Main {
@@ -25,7 +25,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        FlatDarkLaf.setup();
+        FlatLightLaf.setup();
         new Service();
         new MyFrame();
     }

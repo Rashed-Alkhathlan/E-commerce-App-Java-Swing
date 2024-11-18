@@ -17,6 +17,10 @@ public final class Images {
         return new ImageIcon(scaledImg);
     }
 
+    public static ImageIcon getImage(String imgName) {
+        return new ImageIcon("src/Resources/" + imgName + ".png");
+    }
+
     public static ImageIcon scaleImage(ImageIcon imgIcon, int width, int height) {
         Image scaledImg = imgIcon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
         return new ImageIcon(scaledImg);

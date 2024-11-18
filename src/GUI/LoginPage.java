@@ -49,7 +49,7 @@ public class LoginPage extends Page {
         if (phoneOrEmailField.getText().matches(PHONE_REGEX) || phoneOrEmailField.getText().matches(EMAIL_REGEX)) {
             if(UsersService.login(phoneOrEmailField.getText(), passwordField.getText())) {
                 updateWarningLabel("");
-                MyFrame.switchToPage("StoresPage");
+                MyFrame.switchToPage("HomePage");
             } else {
                 updateWarningLabel("Wrong credentials");
             }

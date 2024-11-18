@@ -27,7 +27,7 @@ public class AdminPage extends Page {
         setButton(addStoreButton, sidePanel, 0, 300, sidePanelWidth, 100);
         setButton(removeStoreButton, sidePanel, 0, 400, sidePanelWidth, 100);
         setButton(changeStoreManager, sidePanel, 0, 500, sidePanelWidth, 100);
-        toolBeltPanel.add(backButton, BorderLayout.WEST);
+        headerPanel.add(backButton, BorderLayout.WEST);
     }
 
     @Override

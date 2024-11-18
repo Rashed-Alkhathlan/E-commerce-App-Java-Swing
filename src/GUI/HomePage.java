@@ -13,7 +13,7 @@ public class HomePage extends Page {
 
     @Override
     protected void initPage() {
-
+        defaultBackground(false);
     }
 
     @Override

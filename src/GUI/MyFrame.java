@@ -12,7 +12,7 @@ public final class MyFrame {
     private static final JPanel mainPanel = new JPanel(cardLayout);
     private static final Stack<String> history = new Stack<>();
 
-    private static final int width = 1200;
+    private static final int width = 1300;
     private static final int height = 800;
 
     public MyFrame() {
@@ -30,10 +30,13 @@ public final class MyFrame {
     private void initFrame() {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(true);
-        frame.setMinimumSize(new Dimension(1000, 700));
+        frame.setMinimumSize(new Dimension(width, height));
+        //frame.setUndecorated(true);
 
         loadPanels();
-        switchToPage("StartPage");
+        history.push("HomePage");
+        switchToPage("HomePage");
+
 
         frame.add(mainPanel);
         frame.pack();
@@ -42,20 +45,64 @@ public final class MyFrame {
 
     private static void loadPanels() {
         mainPanel.setPreferredSize(new Dimension(width, height));
-        mainPanel.add(new StartPage(), "StartPage");
-        mainPanel.add(new LoginPage(), "LoginPage");
-        mainPanel.add(new StoresPage(), "StoresPage");
-        mainPanel.add(new CartPage(), "CartPage");
-        mainPanel.add(new AccountPage(), "AccountPage");
-        mainPanel.add(new AdminPage(), "AdminPage");
-        mainPanel.add(new RegisterPage(), "RegisterPage");
+//        mainPanel.add(new StartPage(), "StartPage");
+//        mainPanel.add(new LoginPage(), "LoginPage");
+//        mainPanel.add(new StoresPage(), "StoresPage");
+//        mainPanel.add(new CartPage(), "CartPage");
+//        mainPanel.add(new AccountPage(), "AccountPage");
+//        mainPanel.add(new AdminPage(), "AdminPage");
+//        mainPanel.add(new RegisterPage(), "RegisterPage");
+//        mainPanel.add(new HomePage(), "HomePage");
     }
 
     static void switchToPage(String pageName) {
-        if (pageName.equals("CheckoutPage") && !Main.isSignedIn()) {pageName = "LoginPage";}
-        if (pageName.equals("AccountPage") && !Main.isSignedIn()) {pageName = "LoginPage";}
-        if (pageName.equals("PreviousPage")) {history.pop(); pageName = history.pop();}
-        cardLayout.show(mainPanel, pageName);
-        history.push(pageName);
+        if (pageName.equals("CheckoutPage") && !Main.isSignedIn()) {pageName = "StartPage";}
+        if (pageName.equals("AccountPage") && !Main.isSignedIn()) {pageName = "StartPage";}
+        if (pageName.equals("PreviousPage")) {history.pop(); pageName = history.peek();}
+        if (!pageName.equals(history.peek())) {history.push(pageName);}
+
+        mainPanel.removeAll();
+
+        switch(pageName) {
+            case "HomePage":
+                mainPanel.add(new HomePage());
+                break;
+            case "StoresPage":
+                mainPanel.add(new StoresPage());
+                break;
+            case "ProductsPage":
+                mainPanel.add(new ProductsPage());
+                break;
+            case "RegisterPage":
+                mainPanel.add(new RegisterPage());
+                break;
+            case "LoginPage":
+                mainPanel.add(new LoginPage());
+                break;
+            case "StartPage":
+                mainPanel.add(new StartPage());
+                break;
+            case "AccountPage":
+                mainPanel.add(new AccountPage());
+                break;
+            case "AdminPage":
+                mainPanel.add(new AdminPage());
+                break;
+            case "ManagerPage":
+                mainPanel.add(new ManagerPage());
+                break;
+            case "CheckoutPage":
+                mainPanel.add(new CheckoutPage());
+                break;
+            case "CartPage":
+                mainPanel.add(new CartPage());
+                break;
+            case "ProductPage":
+                mainPanel.add(new ProductPage());
+                break;
+        }
+
+        mainPanel.revalidate();
+        mainPanel.repaint();
     }
 }

@@ -5,8 +5,8 @@ import Utils.Images;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 
 public class CartPage extends Page {
     private final JButton checkoutButton = new JButton("Checkout");
@@ -29,25 +29,21 @@ public class CartPage extends Page {
         setButton(backButton, sidePanel,(sidePanelWidth / 2) - 100, sidePanelHeight - 200, 200, 25);
 
         productsButtonsPanel.setBackground(Color.GRAY);
+        productsButtonsPanel.setOpaque(false);
 
-        productsScrollPane.setBounds(0, 40, panelWidth - sidePanelWidth, panelHeight - 40);
+        productsScrollPane.setBounds(0, 40, frameWidth - sidePanelWidth, frameHeight - 40);
         productsScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        productsScrollPane.setBackground(Color.GRAY);
+        productsScrollPane.setOpaque(false);
+        productsScrollPane.getViewport().setOpaque(false);
 
-        this.addComponentListener(new ComponentListener() {
+        this.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentShown(ComponentEvent e) {
                 updateCartProductsPanel();
             }
-            @Override
-            public void componentResized(ComponentEvent e) {}
-            @Override
-            public void componentMoved(ComponentEvent e) {}
-            @Override
-            public void componentHidden(ComponentEvent e) {}
         });
 
-        this.add(productsScrollPane);
+        centerPanel.add(productsScrollPane, BorderLayout.CENTER);
     }
 
     @Override

@@ -1,62 +1,68 @@
 package GUI;
 
-import Utils.Images;
+import GUI_Components.*;
+import GUI_Components.Menu;
+
 import javax.swing.*;
 import java.awt.*;
 
 public abstract class Page extends JPanel {
 
-    protected JPanel toolBeltPanel = new JPanel();
-    protected JPanel sidePanel = new JPanel();
+    protected JPanel centerPanel;
+    protected JPanel sidePanel;
+    protected Header headerPanel;
+    protected Menu menuPanel;
 
-    protected int panelWidth = MyFrame.getWidth();
-    protected int panelHeight = MyFrame.getHeight();
+    protected int frameWidth = MyFrame.getWidth();
+    protected int frameHeight = MyFrame.getHeight();
     protected int sidePanelWidth = 300;
-    protected int sidePanelHeight = panelHeight - 40;
-
-    Page() {
-        this.setLayout(new BorderLayout(0, 0));
-        this.setBounds(0, 0, panelWidth, panelHeight);
-    }
+    protected int sidePanelHeight = frameHeight;
 
     protected abstract void initPage();
     protected abstract void actionListener();
 
-    protected void defaultBackground() {
-        this.setBackground(Color.GRAY);
-
-        sidePanel.setLayout(null);
-        sidePanel.setBackground(Color.DARK_GRAY);
-        sidePanel.setPreferredSize(new Dimension(300, 0));
-        //sidePanel.setBounds(panelWidth - 300, 40, sidePanelWidth, sidePanelHeight);
-
-        toolBeltPanel.setLayout(new BorderLayout());
-        toolBeltPanel.setBackground(Color.DARK_GRAY);
-        toolBeltPanel.setPreferredSize(new Dimension(0, 40));
-        toolBeltButtons();
-        //toolBeltPanel.setBounds(0, 0, panelWidth, 40);
-
-        this.add(toolBeltPanel, BorderLayout.NORTH);
-        this.add(sidePanel, BorderLayout.EAST);
+    Page() {
+        this.setLayout(new BorderLayout(0, 0));
+        this.setBounds(0, 0, frameWidth, frameHeight);
     }
 
-    private void toolBeltButtons() {
-        JButton accountButton = new JButton();
-        JButton cartButton = new JButton();
+    protected void defaultBackground() {
+        defaultBackground(true);
+    }
 
-        cartButton.setPreferredSize(new Dimension(40, 40));
-        cartButton.setMargin(new Insets(0, 0, 0, 0));
-        cartButton.add(new JLabel(Images.getImage("CartImg", 40, 40)));
+    protected void defaultBackground(boolean makeSidePanel) {
+        headerPanel = new Header("#ffffff", "#ffffff");
+        headerPanel.addMenuButtonAction(e -> menuPanel.slide());
 
-        accountButton.setPreferredSize(new Dimension(40, 40));
-        accountButton.setMargin(new Insets(0, 0, 0, 0));
-        accountButton.add(new JLabel(Images.getImage("UserImg", 40, 40)));
+        centerPanel = new JPanelGradiant("#F2F2F2", "#EAEAEA");
+        centerPanel.setLayout(new BorderLayout());
+        centerPanel.add(headerPanel, BorderLayout.NORTH);
 
-        switchToPageWhenPressed(cartButton, "CartPage");
-        switchToPageWhenPressed(accountButton, "AccountPage");
+        if (makeSidePanel) {
+            sidePanel = new JPanelGradiant("#0F2027", "#2C5364");
+            sidePanel.setLayout(null);
+            sidePanel.setPreferredSize(new Dimension(sidePanelWidth, 0));
+            centerPanel.add(sidePanel, BorderLayout.EAST);
+        }
 
-        toolBeltPanel.add(cartButton, BorderLayout.EAST);
-        toolBeltPanel.add(accountButton, BorderLayout.WEST);
+        setupMenu();
+        add(centerPanel, BorderLayout.CENTER);
+    }
+
+    private void setupMenu() {
+        menuPanel = new Menu("#56CCF2", "#2F80ED");
+
+        menuPanel.addDivider();
+        menuPanel.addButton(1, "Browse Stores", "StoresImg", e -> MyFrame.switchToPage("StoresPage"));
+        menuPanel.addButton(2, "Browse Products", "ProductsImg", e -> MyFrame.switchToPage("ProductsPage"));
+        menuPanel.addDivider();
+        menuPanel.addLabel("Shop by Department:");
+        menuPanel.addButton(3, "Electronics", "ElecImg", e -> MyFrame.switchToPage("HomePage"));
+        menuPanel.addButton(4, "Accessories", "AccsImg", e -> MyFrame.switchToPage("HomePage"));
+        menuPanel.addButton(5, "Arts & Crafts", "ArtImg", e -> MyFrame.switchToPage("HomePage"));
+        menuPanel.addButton(6, "Outdoor", "OutImg", e -> MyFrame.switchToPage("HomePage"));
+
+        add(menuPanel, BorderLayout.WEST);
     }
 
     protected void setButton(JButton button, JPanel panel, int x , int y, int width, int height) {
@@ -75,11 +81,7 @@ public abstract class Page extends JPanel {
         panel.add(textField);
     }
 
-    protected static void switchToPageWhenPressed(JButton button, String pageName) {
+    public static void switchToPageWhenPressed(JButton button, String pageName) {
         button.addActionListener(e -> MyFrame.switchToPage(pageName));
-    }
-
-    public JPanel getPanel() {
-        return this;
     }
 }

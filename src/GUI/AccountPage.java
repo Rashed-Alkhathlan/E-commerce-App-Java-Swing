@@ -4,6 +4,7 @@ import Objects.Main;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 
@@ -29,18 +30,12 @@ public class AccountPage extends Page {
         setButton(addressesButton, sidePanel, 0, 200, sidePanelWidth, 100);
         setButton(settingsButton, sidePanel, 0, 300, sidePanelWidth, 100);
         setButton(specialUserButton, sidePanel, 0, 400, sidePanelWidth, 100);
-        toolBeltPanel.add(backButton, BorderLayout.WEST);
-        this.addComponentListener(new ComponentListener() {
+        headerPanel.add(backButton, BorderLayout.WEST);
+        this.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentShown(ComponentEvent e) {
                 updateSpecialUserButton();
             }
-            @Override
-            public void componentResized(ComponentEvent e) {}
-            @Override
-            public void componentMoved(ComponentEvent e) {}
-            @Override
-            public void componentHidden(ComponentEvent e) {}
         });
     }
 
@@ -50,7 +45,7 @@ public class AccountPage extends Page {
         specialUserButton.addActionListener(e -> {
             if (Main.getCurrentUser().isAdmin()) {
                 MyFrame.switchToPage("AdminPage");
-            } else if (Main.getCurrentUser().isAdmin()) {
+            } else if (Main.getCurrentUser().isManager()) {
                 MyFrame.switchToPage("ManagerPage");
             }
         });
