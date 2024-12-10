@@ -15,6 +15,7 @@ public final class MyFrame {
     private static JPanel loadingPanel;
     private static final Stack<String> history = new Stack<>();
     private static boolean inAnimation = false;
+    private static boolean loading = false;
 
     private static final HashMap<String, Function<Object, JPanel>> pages = new HashMap<>();
 
@@ -52,6 +53,7 @@ public final class MyFrame {
 
         setupLoadingPanel();
         loadPages();
+        history.push("StartPage");
         showPage("StartPage");
 
         mainPanel.setLayout(new BorderLayout());
@@ -67,10 +69,10 @@ public final class MyFrame {
         pages.put("CartPage", e -> new CartPage());
         pages.put("StoresPage", e -> new StoresPage());
         pages.put("ProductsPage", e -> new ProductsPage((UUID)e));
-        pages.put("RegisterPage", e -> Main.isSignedIn() ? new HomePage() : new RegisterPage());
-        pages.put("LoginPage", e -> Main.isSignedIn() ? new HomePage() : new LoginPage());
-        pages.put("CheckoutPage", e -> Main.isSignedIn() ? new CheckoutPage() : new LoginPage());
-        pages.put("AccountPage", e -> Main.isSignedIn() ? new AccountPage() : new LoginPage());
+        pages.put("RegisterPage", e -> new RegisterPage());
+        pages.put("LoginPage", e -> new LoginPage());
+        pages.put("CheckoutPage", e -> new CheckoutPage());
+        pages.put("AccountPage", e -> new AccountPage());
     }
 
     public static void showPage(String pageName) {
@@ -79,13 +81,23 @@ public final class MyFrame {
     }
 
     public static void showPage(String pageName, Object param) {
-        history.push(pageName);
-        load(() -> {
-            mainPanel.removeAll();
-            mainPanel.add(pages.get(pageName).apply(param));
-            mainPanel.revalidate();
-            mainPanel.repaint();
-        });
+        if (pageName.equals("RegisterPage") && Main.isSignedIn()) {pageName = "HomePage";}
+        if (pageName.equals("LoginPage") && Main.isSignedIn()) {pageName = "HomePage";}
+        if (pageName.equals("CheckoutPage") && !Main.isSignedIn()) {pageName = "LoginPage";}
+        if (pageName.equals("AccountPage") && !Main.isSignedIn()) {pageName = "LoginPage";}
+
+        if (!pageName.equals(history.peek())) {history.push(pageName);}
+
+        if (!loading) {
+            String finalPageName = pageName;
+            load(() -> {
+                mainPanel.removeAll();
+                mainPanel.add(pages.get(finalPageName).apply(param));
+                System.out.println(finalPageName);
+                mainPanel.revalidate();
+                mainPanel.repaint();
+            });
+        }
     }
 
     public static void reloadPage() {
@@ -93,6 +105,7 @@ public final class MyFrame {
     }
 
     public static void load(Runnable backgroundTask) {
+        loading = true;
         loadingPanel.setVisible(true);
         loadingPanel.revalidate();
         loadingPanel.repaint();
@@ -107,6 +120,7 @@ public final class MyFrame {
             @Override
             protected void done() {
                 SwingUtilities.invokeLater(() -> loadingPanel.setVisible(false));
+                loading = false;
             }
         }.execute();
     }

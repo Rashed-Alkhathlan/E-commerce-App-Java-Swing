@@ -58,7 +58,8 @@ public class ManagerAccount extends AccountPage {
 
         private final CardPanel totalProductsPanel = new CardPanel(Images.getImage("ProductsImg", 30, 30));
         private final CardPanel totalOrdersPanel = new CardPanel(Images.getImage("FlagImg", 30, 30));
-        private final Panel storeStatusPanel = new Panel();
+        private final CardPanel storeStatusPanel = new CardPanel(managerStore.getStatus() == StoreStatus.CLOSED ? Images.getImage("LockImg", 30, 35) : Images.getImage("OpenLockImg", 30, 37));
+        private final Button openStoreButton = new Button();
 
         DashboardPanel() {
             initPanel();
@@ -83,7 +84,19 @@ public class ManagerAccount extends AccountPage {
             totalOrdersPanel.setDescriptionLabel("Active: ");
             totalOrdersPanel.setValuesLabel("Total: ");
 
+            openStoreButton.add(storeStatusPanel);
+            storeStatusPanel.setAlignment(GroupLayout.Alignment.CENTER);
             storeStatusPanel.setArch(20);
+            storeStatusPanel.setTitleLabel("Open Store");
+            storeStatusPanel.setDescriptionLabel("Current Status: " + managerStore.getStatus().toString());
+            storeStatusPanel.setValuesLabel("Click to Open");
+
+            openStoreButton.addActionListener(e -> {
+                StoreStatus status = managerStore.getStatus() == StoreStatus.CLOSED ? StoreStatus.OPEN : StoreStatus.CLOSED;
+                StoresService.updateStore(managerStore.getId(), managerStore.getName(), managerStore.getDescription(), status, managerStore.getMainImageIcon());
+                managerStore.setStatus(status);
+                switchToPanel(DashboardPanel::new);
+            });
         }
 
         private void setupTable() {
@@ -126,7 +139,7 @@ public class ManagerAccount extends AccountPage {
                             .addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
                                     .addComponent(tablePanel, 500, Short.MAX_VALUE, Short.MAX_VALUE)
                                     .addGroup(layout.createSequentialGroup()
-                                            .addComponent(storeStatusPanel, 300, Short.MAX_VALUE, Short.MAX_VALUE)
+                                            .addComponent(openStoreButton, 300, Short.MAX_VALUE, Short.MAX_VALUE)
                                             .addGap(20)
                                             .addComponent(totalOrdersPanel, 300, Short.MAX_VALUE, Short.MAX_VALUE)
                                             .addGap(20)
@@ -141,9 +154,9 @@ public class ManagerAccount extends AccountPage {
                             .addContainerGap(100, Short.MAX_VALUE)
                             .addGap(20)
                             .addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-                                    .addComponent(totalProductsPanel, 150, 300, 300)
+                                    .addComponent(openStoreButton, 150, 300, 300)
                                     .addComponent(totalOrdersPanel, 150, 300, 300)
-                                    .addComponent(storeStatusPanel, 150, 300, 300))
+                                    .addComponent(totalProductsPanel, 150, 300, 300))
                             .addGap(50)
                             .addComponent(tablePanel, 400, 500, Short.MAX_VALUE)
                             .addGap(20)
@@ -237,7 +250,7 @@ public class ManagerAccount extends AccountPage {
             });
 
             logoPanel.setBorder(new LineBorder(new Color(175, 175, 175)));
-            logoPanel.add(new JLabel(managerStore.getMainImageIcon()));
+            logoPanel.add(new JLabel(Images.scaleImage(managerStore.getMainImageIcon(), 200, 167)));
 
             saveButton.addActionListener(e -> getInput());
             editButton.addActionListener(e -> {

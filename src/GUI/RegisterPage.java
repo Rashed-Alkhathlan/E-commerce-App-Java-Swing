@@ -179,7 +179,6 @@ public class RegisterPage extends Page {
             } else {
                 warningLabel.setForeground(Color.GRAY);
                 updateWarningLabel("Account created successfully. Redirecting...");
-                MyFrame.showPage("HomePage");
             }
         }
     }

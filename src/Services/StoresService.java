@@ -4,8 +4,11 @@ import Enums.StoreStatus;
 import Objects.Manager;
 import Objects.Store;
 import Objects.User;
+import Utils.Images;
 
 import javax.swing.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -62,5 +65,14 @@ public final class StoresService extends Service {
 
     public static void updateStore(UUID storeId, String name, String description, StoreStatus status, ImageIcon icon) {
         database.updateStore(storeId, name, description, status, icon);
+    }
+
+    public static void deleteStore(UUID ownerId) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
+        String date = LocalDate.now().format(formatter);
+
+        database.deleteStore(ownerId);
+        database.registerStore(UUID.randomUUID(), ownerId, "", "", date, StoreStatus.CLOSED, Images.getJPGImage("MissingImg"));
+
     }
 }

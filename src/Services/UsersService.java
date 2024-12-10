@@ -87,4 +87,16 @@ public final class UsersService extends Service {
         Main.getCurrentUser().setCart(user.getCart());
         ((Manager)Main.getCurrentUser()).setStoreId(storeId);
     }
+
+    public static void deleteUser(UUID userId) {
+        database.deleteUser(userId);
+    }
+
+    public static void registerAddress(String country, String city, String postalCode, String additionalInfo) {
+        database.registerAddress(UUID.randomUUID(), Main.getCurrentUser().getId(),country, city, postalCode, additionalInfo);
+    }
+
+    public static ArrayList<Address> getAddresses(UUID userId) {
+        return database.getAllAddresses(userId);
+    }
 }

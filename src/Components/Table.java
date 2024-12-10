@@ -3,12 +3,15 @@ package Components;
 import Enums.OrderStatus;
 import Enums.StoreStatus;
 import Enums.UserRole;
+import Utils.Images;
 
 import java.awt.*;
+import java.awt.event.ActionListener;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
 
 public class Table extends JTable {
 
@@ -29,24 +32,27 @@ public class Table extends JTable {
                 if (column == 4) {
                     header.setHorizontalAlignment(JLabel.CENTER);
                 }
+                if (column == 5) {
+                    header.setHorizontalAlignment(JLabel.CENTER);
+                    getColumnModel().getColumn(5).setPreferredWidth(10);
+                }
                 return header;
             }
         });
         setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                if (column != 4) {
-                    Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                    component.setBackground(Color.WHITE);
-                    setBorder(noFocusBorder);
-                    if (isSelected) {
-                        component.setForeground(new Color(15, 89, 140));
-                    } else {
-                        component.setForeground(new Color(102, 102, 102));
-                    }
-                    return component;
+            public Component getTableCellRendererComponent(JTable jTable, Object value, boolean selected, boolean focus, int row, int column) {
+                if (value instanceof ActionListener) {
+                    return new CellActionPanel((ActionListener) value);
+                } else if (column == 4) {
+                    return new CellStatusPanel(value);
                 } else {
-                    return new CellPanel(value);
+                    Component component = super.getTableCellRendererComponent(jTable, value, selected, focus, row, column);
+                    setBorder(noFocusBorder);
+                    component.setForeground(new Color(0, 0, 0, 0));
+                    JLabel label = new JLabel(value + "");
+                    label.setForeground(new Color(102, 102, 102));
+                    return label;
                 }
             }
         });
@@ -55,6 +61,36 @@ public class Table extends JTable {
     public void addRow(Object[] row) {
         DefaultTableModel model = (DefaultTableModel) getModel();
         model.addRow(row);
+    }
+
+    @Override
+    public TableCellEditor getCellEditor(int row, int col) {
+        if (col == 5) {
+            return new TableCellAction();
+        } else {
+            return super.getCellEditor(row, col);
+        }
+    }
+
+    public static class TableCellAction extends DefaultCellEditor {
+
+        private ActionListener action;
+
+        public TableCellAction() {
+            super(new JCheckBox());
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable jTable, Object object, boolean isSelected, int row, int column) {
+            action = (ActionListener) object;
+            return new CellActionPanel(action);
+        }
+
+        //  This method to pass data to cell render when focus lose in cell
+        @Override
+        public Object getCellEditorValue() {
+            return action;
+        }
     }
 
     public static class TableHeader extends JLabel {
@@ -76,11 +112,11 @@ public class Table extends JTable {
         }
     }
 
-    public static class CellPanel extends JPanel {
+    public static class CellStatusPanel extends JPanel {
 
         private StatusLabel label;
 
-        public CellPanel(Object status) {
+        public CellStatusPanel(Object status) {
             if (status instanceof UserRole) {
                 label = new UserRoleLabel();
             } else if (status instanceof StoreStatus) {
@@ -94,7 +130,7 @@ public class Table extends JTable {
         }
         
         private void initComponents() {
-            setBackground(new Color(255, 255, 255));
+            setBackground(Color.WHITE);
 
             GroupLayout layout = new GroupLayout(this);
             this.setLayout(layout);
@@ -112,6 +148,26 @@ public class Table extends JTable {
                                     .addComponent(label, GroupLayout.DEFAULT_SIZE, 24, Short.MAX_VALUE)
                                     .addGap(8, 8, 8))
             );
+        }
+    }
+
+    private static class CellActionPanel extends JPanel {
+        Button deleteButton = new Button(Images.getImage("DeleteImg", 15, 15));
+
+        CellActionPanel(ActionListener action) {
+            initComponents();
+            deleteButton.addActionListener(action);
+        }
+
+        private void initComponents() {
+            setBackground(Color.WHITE);
+            setLayout(new GridBagLayout());
+            setBorder(new EmptyBorder(5, 20, 5, 20));
+            deleteButton.setArch(30);
+            deleteButton.setPreferredSize(new Dimension(40, 40));
+            deleteButton.setFocusable(true);
+            deleteButton.setOpaque(false);
+            add(deleteButton);
         }
     }
 }

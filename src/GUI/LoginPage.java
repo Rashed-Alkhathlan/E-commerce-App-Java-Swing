@@ -135,7 +135,6 @@ public class LoginPage extends Page {
         } else if (UsersService.login(phoneOrEmailField.getText(), passwordField.getText())) {
             warningLabel.setForeground(Color.GRAY);
             updateWarningLabel("Logged in successfully. Redirecting...");
-            MyFrame.showPage("HomePage");
         } else if (phoneOrEmailField.getText().matches(PHONE_REGEX)){
             updateWarningLabel("Wrong phone number / password");
         } else if (phoneOrEmailField.getText().matches(EMAIL_REGEX)) {

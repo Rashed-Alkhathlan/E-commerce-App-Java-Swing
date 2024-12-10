@@ -1,10 +1,12 @@
 package GUI;
 
 import Components.*;
+import Components.Dialog;
 import Components.Panel;
 import Components.ScrollPane;
 import Enums.StoreStatus;
 import Enums.UserRole;
+import Objects.Main;
 import Objects.Manager;
 import Objects.Store;
 import Objects.User;
@@ -17,6 +19,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class AdminAccount extends AccountPage {
 
@@ -36,7 +40,7 @@ public class AdminAccount extends AccountPage {
         menuPanel.addButton("Manage stores", "ProductsImg", e -> switchToPanel(StoresPanel::new));
     }
 
-    private static class DashboardPanel extends Panel {
+    private class DashboardPanel extends Panel {
 
         private final Table table = new Table();
         private final ScrollPane tableScrollPane = new ScrollPane(table);
@@ -91,14 +95,25 @@ public class AdminAccount extends AccountPage {
             tableLabel.setHorizontalAlignment(SwingConstants.LEFT);
             tableLabel.setOpaque(false);
 
-            table.setModel(new DefaultTableModel(new Object[][]{}, new String[]{"Name", "PhoneNumber", "Email", "Joined", "Type"}) {
+            table.setModel(new DefaultTableModel(new Object[][]{}, new String[]{"Name", "PhoneNumber", "Email", "Joined", "Type", "Action"}) {
                 public boolean isCellEditable(int rowIndex, int columnIndex) {
-                    return false;
+                    return columnIndex == 5;
                 }
             });
 
             for (User user : UsersService.getUsers()) {
-                table.addRow(new Object[]{user.getFirstName() + " " + user.getLastName(), user.getPhoneNumber(), user.getEmail() != null ? user.getEmail() : "not signed", user.getJoinedDate(), user.getRole()});
+                if (!(user.getId().equals(Main.getCurrentUser().getId()))) {
+                    table.addRow(new Object[]{user.getFirstName() + " " + user.getLastName(), user.getPhoneNumber(), user.getEmail() != null ? user.getEmail() : "not signed", user.getJoinedDate(), user.getRole(), (ActionListener) e -> {
+                        Dialog dialog = new Dialog("Warning", "<html>Continuing means deleting the User and the corresponding Store(if they are a manager). Are sure you want to proceed?</html>");
+                        dialog.setVisible(true);
+                        dialog.addNoButtonAction(a -> dialog.dispose());
+                        dialog.addYesButtonAction(a -> {
+                            dialog.dispose();
+                            UsersService.deleteUser(user.getId());
+                            switchToPanel(DashboardPanel::new);
+                        });
+                    }});
+                }
             }
         }
 
@@ -143,7 +158,7 @@ public class AdminAccount extends AccountPage {
         }
     }
 
-    private static class ManagersPanel extends Panel {
+    private class ManagersPanel extends Panel {
 
         private final Table table = new Table();
         private final ScrollPane tableScrollPane = new ScrollPane(table);
@@ -198,23 +213,29 @@ public class AdminAccount extends AccountPage {
             tableLabel.setHorizontalAlignment(SwingConstants.LEFT);
             tableLabel.setOpaque(false);
 
-            table.setModel(new DefaultTableModel(new Object[][]{}, new String[]{"Name", "PhoneNumber", "Email", "Joined", "Type"}) {
+            table.setModel(new DefaultTableModel(new Object[][]{}, new String[]{"Name", "PhoneNumber", "Email", "Joined", "Type", "Action"}) {
                 public boolean isCellEditable(int rowIndex, int columnIndex) {
-                    return false;
+                    return columnIndex == 5;
                 }
             });
 
             for (User user : UsersService.getUsers(UserRole.MANAGER)) {
-                table.addRow(new Object[]{user.getFirstName() + " " + user.getLastName(), user.getPhoneNumber(), user.getEmail() != null ? user.getEmail() : "not signed", user.getJoinedDate(), user.getRole()});
+                table.addRow(new Object[]{user.getFirstName() + " " + user.getLastName(), user.getPhoneNumber(), user.getEmail() != null ? user.getEmail() : "not signed", user.getJoinedDate(), user.getRole(), (ActionListener) e -> {
+                    Dialog dialog = new Dialog("Warning", "<html>Continuing means deleting the Owner and the corresponding Store. Are sure you want to proceed?</html>");
+                    dialog.setVisible(true);
+                    dialog.addNoButtonAction(a -> dialog.dispose());
+                    dialog.addYesButtonAction(a -> {
+                        dialog.dispose();
+                        UsersService.deleteUser(user.getId());
+                        switchToPanel(ManagersPanel::new);
+                    });
+                }});
             }
         }
 
         private void setupLayout() {
             GroupLayout layout = new GroupLayout(this);
             setLayout(layout);
-
-            layout.setAutoCreateGaps(true);
-            layout.setAutoCreateContainerGaps(true);
 
             // Create horizontal group
             layout.setHorizontalGroup(
@@ -239,18 +260,18 @@ public class AdminAccount extends AccountPage {
                             .addContainerGap(100, Short.MAX_VALUE)
                             .addGap(20)
                             .addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-                                    .addComponent(totalUsersPanel, 100, Short.MAX_VALUE, Short.MAX_VALUE)
-                                    .addComponent(totalStoresPanel, 100, Short.MAX_VALUE, Short.MAX_VALUE)
-                                    .addComponent(totalOrdersPanel, 100, Short.MAX_VALUE, Short.MAX_VALUE))
+                                    .addComponent(totalUsersPanel, 150, 300, 300)
+                                    .addComponent(totalStoresPanel, 150, 300, 300)
+                                    .addComponent(totalOrdersPanel, 150, 300, 300))
                             .addGap(50)
-                            .addComponent(tablePanel, 450, Short.MAX_VALUE, Short.MAX_VALUE)
+                            .addComponent(tablePanel, 400, 500, Short.MAX_VALUE)
                             .addGap(20)
                             .addContainerGap(100, Short.MAX_VALUE)
             );
         }
     }
 
-    private static class StoresPanel extends Panel {
+    private class StoresPanel extends Panel {
 
         private final Table table = new Table();
         private final ScrollPane tableScrollPane = new ScrollPane(table);
@@ -305,15 +326,24 @@ public class AdminAccount extends AccountPage {
             tableLabel.setHorizontalAlignment(SwingConstants.LEFT);
             tableLabel.setOpaque(false);
 
-            table.setModel(new DefaultTableModel(new Object[][]{}, new String[]{"Name", "Products", "Owner", "Created", "Status"}) {
+            table.setModel(new DefaultTableModel(new Object[][]{}, new String[]{"Name", "Products", "Owner", "Created", "Status", "Action"}){
                 public boolean isCellEditable(int rowIndex, int columnIndex) {
-                    return false;
+                    return columnIndex == 5;
                 }
             });
 
             for (Store store : StoresService.getStores()) {
                 Manager owner = StoresService.getStoreOwner(store.getId());
-                table.addRow(new Object[]{store.getName(), StoresService.getStoreProductCount(store.getId()), owner.getFirstName() + " " + owner.getLastName(), store.getCreationDate(), store.getStatus()});
+                table.addRow(new Object[]{store.getName().isEmpty() ? "Name not set" : store.getName(), StoresService.getStoreProductCount(store.getId()), owner.getFirstName() + " " + owner.getLastName(), store.getCreationDate(), store.getStatus(), (ActionListener) e -> {
+                    Dialog dialog = new Dialog("Warning", "<html>Continuing means deleting the Store and the corresponding Products. Are sure you want to proceed?</html>");
+                    dialog.setVisible(true);
+                    dialog.addNoButtonAction(a -> dialog.dispose());
+                    dialog.addYesButtonAction(a -> {
+                        dialog.dispose();
+                        StoresService.deleteStore(owner.getId());
+                        switchToPanel(StoresPanel::new);
+                    });
+                }});
             }
         }
 
@@ -347,11 +377,11 @@ public class AdminAccount extends AccountPage {
                             .addContainerGap(100, Short.MAX_VALUE)
                             .addGap(20)
                             .addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-                                    .addComponent(totalUsersPanel, 100, Short.MAX_VALUE, Short.MAX_VALUE)
-                                    .addComponent(totalStoresPanel, 100, Short.MAX_VALUE, Short.MAX_VALUE)
-                                    .addComponent(totalOrdersPanel, 100, Short.MAX_VALUE, Short.MAX_VALUE))
+                                    .addComponent(totalUsersPanel, 150, 300, 300)
+                                    .addComponent(totalStoresPanel, 150, 300, 300)
+                                    .addComponent(totalOrdersPanel, 150, 300, 300))
                             .addGap(50)
-                            .addComponent(tablePanel, 450, Short.MAX_VALUE, Short.MAX_VALUE)
+                            .addComponent(tablePanel, 400, 500, Short.MAX_VALUE)
                             .addGap(20)
                             .addContainerGap(100, Short.MAX_VALUE)
             );

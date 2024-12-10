@@ -23,7 +23,6 @@ public class CustomerAccount extends AccountPage {
             dialog.addYesButtonAction(a -> {
                 dialog.dispose();
                 UsersService.makeManager(Main.getCurrentUser());
-                MyFrame.reloadPage();
             });
         });
     }

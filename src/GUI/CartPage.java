@@ -1,8 +1,10 @@
 package GUI;
 
+import Components.*;
 import Components.Button;
 import Components.Panel;
 import Components.ScrollPane;
+import Components.TextField;
 import Objects.*;
 import Services.CartService;
 import Utils.Images;
@@ -23,19 +25,29 @@ public class CartPage extends Page {
     private final JPanel productsButtonsPanel = new JPanel();
     private final ScrollPane productsScrollPane = new ScrollPane(productsButtonsPanel);
     private final Button checkoutButton = new Button("Checkout");
-    private final Button BackButton = new Button("Back");
+    private final Button backButton = new Button("Back");
+    private final Button applyDiscountButton = new Button("Apply");
 
-    private final JLabel subTotalLabel = new JLabel("SubTotal:");
-    private final JLabel shippingLabel = new JLabel("Shipping and handling:");
-    private final JLabel appliedDiscountLabel = new JLabel("Discount:");
+    private final JLabel subTotalLabel = new JLabel("Items:");
+    private final JLabel shippingLabel = new JLabel("Shipping & handling:");
+    private final JLabel appliedDiscountLabel = new JLabel("Applied Discount:");
     private final JLabel totalLabel = new JLabel("Total:");
 
-    private final JLabel discountLabel = new JLabel("Apply a Discount:");
+    private final JLabel subTotalNumLabel = new JLabel("$0", SwingConstants.CENTER);
+    private final JLabel shippingNumLabel = new JLabel("$0", SwingConstants.CENTER);
+    private final JLabel appliedDiscountNumLabel = new JLabel("$0", SwingConstants.CENTER);
+    private final JLabel totalNumLabel = new JLabel("$0", SwingConstants.CENTER);
+
+    private final JLabel discountLabel = new JLabel("Discount code:");
     private final TextField discountField = new TextField("Enter a discount");
 
     private final Color buttonColor = Color.WHITE;
-    private int totalCart;
+    private final Cart currentCart;
+    private int totalCartProducts;
     private ArrayList<HashMap.Entry<Product, Integer>> cartProducts;
+
+    private double discountPercent = 0;
+    private final String discountCode = "50OFF";
 
     private final int iconWidth = 200;
     private final int iconHeight = 200;
@@ -44,6 +56,7 @@ public class CartPage extends Page {
 
 
     CartPage() {
+        currentCart = Main.getCurrentUser().getCart();
         initPage();
     }
 
@@ -54,6 +67,7 @@ public class CartPage extends Page {
         actionListener();
 
         setupProductsPanel();
+        setupCartPanel();
         setupLayout();
     }
 
@@ -80,41 +94,116 @@ public class CartPage extends Page {
                 }
             }
         });
+        applyDiscountButton.addActionListener(e -> {
+            if (discountField.getText().equals(discountCode)) {
+                discountPercent = 0.50;
+                updateCartPanel();
+                new PopupMessage("Discount applied Successfully", PopupMessage.Type.SUCCESS);
+            }
+        });
+        backButton.addActionListener(e -> MyFrame.showPage("PreviousPage"));
     }
 
     private void setupLayout() {
-        cartButtonsPanel.setBackground(Color.WHITE);
-        cartButtonsPanel.setArch(20);
-        cartButtonsPanel.setPreferredSize(new Dimension(350, 0));
-
         contentPanel.setLayout(new BorderLayout(40, 0));
         contentPanel.setBorder(new EmptyBorder(40, 40, 40, 40));
         contentPanel.add(cartButtonsPanel, BorderLayout.EAST);
         contentPanel.add(productsPanel, BorderLayout.CENTER);
+    }
 
+    private void setupCartPanel() {
+        cartButtonsPanel.setBackground(Color.WHITE);
+        cartButtonsPanel.setArch(20);
+        cartButtonsPanel.setPreferredSize(new Dimension(350, 0));
+
+        updateCartPanel();
+        setupCartPanelLayout();
+    }
+
+    private void updateCartPanel() {
+        subTotalNumLabel.setText("$" + String.format("%.2f" ,currentCart.getTotalPrice()));
+        shippingNumLabel.setText("$10");
+
+        double total = 0, discountAmount = 0;
+        try {
+            double value1 = Double.parseDouble(subTotalNumLabel.getText().replace("$", "").trim());
+            double value2 = Double.parseDouble(shippingNumLabel.getText().replace("$", "").trim());
+            total = value1 + value2;
+        } catch (NumberFormatException ignored) {}
+
+        if (discountPercent != 0) {
+            discountAmount = total * discountPercent;
+            appliedDiscountNumLabel.setText("- $" + discountAmount);
+            appliedDiscountNumLabel.setVisible(true);
+            appliedDiscountLabel.setVisible(true);
+        } else {
+            appliedDiscountNumLabel.setVisible(false);
+            appliedDiscountLabel.setVisible(false);
+        }
+
+        totalNumLabel.setText("$" + (total - discountAmount));
+    }
+
+    private void setupCartPanelLayout() {
         GroupLayout layout = new GroupLayout(cartButtonsPanel);
         cartButtonsPanel.setLayout(layout);
 
         layout.setHorizontalGroup(
                 layout.createSequentialGroup()
-                        .addContainerGap(50, 100)
-                        .addGroup(layout.createParallelGroup()
-                                .addComponent(subTotalLabel)
-                                .addComponent(shippingLabel)
-                                .addComponent(appliedDiscountLabel)
-                                .addComponent(discountLabel)
-                                .addComponent(discountField)
-                                .addComponent(totalLabel))
+                        .addContainerGap(50, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
+                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addComponent(subTotalLabel, 150, 150 ,150)
+                                                .addComponent(subTotalNumLabel, 70, 70, 70))
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addComponent(shippingLabel, 150, 150 ,150)
+                                                .addComponent(shippingNumLabel, 70, 70, 70))
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addComponent(appliedDiscountLabel, 150, 150 ,150)
+                                                .addComponent(appliedDiscountNumLabel, 70, 70, 70))
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addGroup(layout.createParallelGroup()
+                                                        .addComponent(discountLabel, 170, 170 ,170)
+                                                        .addComponent(discountField, 170, 170 ,170))
+                                                .addComponent(applyDiscountButton, 50, 50, 50))
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addComponent(totalLabel, 150, 150 ,150)
+                                                .addComponent(totalNumLabel, 70, 70, 70)))
+                                .addComponent(checkoutButton, 200, 200, 200)
+                                .addComponent(backButton, 200, 200 ,200))
+                        .addContainerGap(50, Short.MAX_VALUE)
         );
 
         layout.setVerticalGroup(
                 layout.createSequentialGroup()
-                        .addComponent(subTotalLabel)
-                        .addComponent(shippingLabel)
-                        .addComponent(appliedDiscountLabel)
-                        .addComponent(discountLabel)
-                        .addComponent(discountField)
-                        .addComponent(totalLabel)
+                        .addContainerGap(50, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup()
+                                .addComponent(subTotalLabel, 30, 30, 30)
+                                .addComponent(subTotalNumLabel, 30, 30, 30))
+                        .addGap(10)
+                        .addGroup(layout.createParallelGroup()
+                                .addComponent(shippingLabel, 30, 30, 30)
+                                .addComponent(shippingNumLabel, 30, 30, 30))
+                        .addGap(10)
+                        .addGroup(layout.createParallelGroup()
+                                .addComponent(appliedDiscountLabel, 30, 30, 30)
+                                .addComponent(appliedDiscountNumLabel, 30, 30, 30))
+                        .addGap(10)
+                        .addComponent(discountLabel, 30, 30, 30)
+                        .addGap(2)
+                        .addGroup(layout.createParallelGroup()
+                                .addComponent(discountField, 30, 30, 30)
+                                .addComponent(applyDiscountButton, 30, 30, 30))
+                        .addGap(40)
+                        .addGroup(layout.createParallelGroup()
+                                .addComponent(totalLabel, 30, 30, 30)
+                                .addComponent(totalNumLabel, 30, 30, 30))
+                        .addGap(60)
+                        .addComponent(checkoutButton, 30, 30, 30)
+                        .addGap(10)
+                        .addComponent(backButton, 30, 30 ,30)
+                        .addContainerGap(50, Short.MAX_VALUE)
         );
     }
 
@@ -131,18 +220,17 @@ public class CartPage extends Page {
 
     private void updateProductsPanel() {
         productsButtonsPanel.removeAll();
-        cartProducts = Main.getCurrentUser().getCart().getProducts();
-        totalCart = cartProducts.size();
+        cartProducts = currentCart.getProducts();
+        totalCartProducts = cartProducts.size();
     }
 
     private void loadVisibleProducts() {
 
         int panelWidth = productsScrollPane.getWidth();
-        int horizontalGap = 6, verticalGap = 6;
+        int verticalGap = 6;
 
         int productsPerRow = 1;
-        int rows = totalCart;
-
+        int rows = totalCartProducts;
         int totalHeight = rows * (productButtonHeight + verticalGap) + 50;
 
         productsButtonsPanel.setPreferredSize(new Dimension(panelWidth, totalHeight));
@@ -157,7 +245,7 @@ public class CartPage extends Page {
 
         // Calculate product indices for visible rows
         int startIndex = firstVisibleRow * productsPerRow;
-        int endIndex = Math.min(lastVisibleRow * productsPerRow, totalCart);
+        int endIndex = Math.min(lastVisibleRow * productsPerRow, totalCartProducts);
 
         // Clear buttons outside the visible area
         for (Component component : productsButtonsPanel.getComponents()) {
@@ -178,11 +266,10 @@ public class CartPage extends Page {
                 JButton productButton = getProductButton(product, quantity);
                 productButton.putClientProperty("index", i);
 
-                int row = i / productsPerRow;
-                int x = (panelWidth - (productsPerRow * (panelWidth + horizontalGap))) / 2;
-                int y = row * (productButtonHeight + verticalGap);
+                int x = 2;
+                int y = i * (productButtonHeight + verticalGap);
 
-                productButton.setBounds(x, y, panelWidth, productButtonHeight);
+                productButton.setBounds(x, y, panelWidth - 8, productButtonHeight);
                 productsButtonsPanel.add(productButton);
             }
         }
@@ -207,7 +294,6 @@ public class CartPage extends Page {
         Button productButton = new Button();
 
         productButton.setArch(0);
-        productButton.setPreferredSize(new Dimension(productsScrollPane.getWidth(), productButtonHeight));
         productButton.setBorder(new EmptyBorder(1, 1, 1, 1));
         productButton.setLayout(new BorderLayout());
 
@@ -255,6 +341,7 @@ public class CartPage extends Page {
         JLabel amountLabel = new JLabel(String.valueOf(quantity), SwingConstants.CENTER);
 
         panel.setBackground(buttonColor);
+        panel.setBorder(new EmptyBorder(3, 3, 3, 3));
         increaseButton.setFont(new Font("Arial", Font.PLAIN, 20));
         increaseButton.setHorizontalTextPosition(SwingConstants.CENTER);
         decreaseButton.setFont(new Font("Arial", Font.PLAIN, 26));
@@ -283,10 +370,12 @@ public class CartPage extends Page {
         increaseButton.addActionListener(e -> {
             CartService.addToCart(product, 1);
             amountLabel.setText(String.valueOf((Integer.parseUnsignedInt(amountLabel.getText()) + 1)));
+            updateCartPanel();
         });
         decreaseButton.addActionListener(e -> {
             CartService.removeFromCart(product, 1);
             amountLabel.setText(String.valueOf((Integer.parseUnsignedInt(amountLabel.getText()) - 1)));
+            updateCartPanel();
             if (Integer.parseUnsignedInt(amountLabel.getText()) <= 0) {
                 MyFrame.reloadPage();
             }

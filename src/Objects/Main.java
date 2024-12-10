@@ -45,7 +45,6 @@ public class Main {
         new Service();
         new MyFrame();
         //UsersService.login("0550818870", "Rashed123*");
-        //UsersService.login("0550881846", "Khaled123*");
-        //MyFrame.reloadPage();
+        UsersService.login("0550881846", "Khaled123*");
     }
 }

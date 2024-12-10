@@ -404,10 +404,10 @@ public class DBUtils {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     UUID id = UUID.fromString(rs.getString("id"));
-                    String country = rs.getString("name");
-                    String city = rs.getString("description");
-                    String postalCode = rs.getString("price");
-                    String additionalInfo = rs.getString("quantity");
+                    String country = rs.getString("country");
+                    String city = rs.getString("city");
+                    String postalCode = rs.getString("postal_code");
+                    String additionalInfo = rs.getString("additional_info");
 
                     addresses.add(new Address(id, country, city, postalCode, additionalInfo));
                 }
@@ -580,5 +580,46 @@ public class DBUtils {
             e.printStackTrace();
         }
     }
+
+    public void deleteUser(UUID id) {
+        String query = "DELETE FROM Users WHERE id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, id.toString());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteStore(UUID id) {
+        String query = "DELETE FROM Stores WHERE owner_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, id.toString());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteProduct(UUID id) {
+        String query = "DELETE FROM Products WHERE id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, id.toString());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteAddress(UUID id) {
+        String query = "DELETE FROM Address WHERE id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, id.toString());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 
 }
