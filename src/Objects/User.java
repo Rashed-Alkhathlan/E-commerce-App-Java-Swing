@@ -1,13 +1,9 @@
 package Objects;
+import Enums.UserRole;
 
-import java.util.ArrayList;
 import java.util.UUID;
 
-public class User {
-
-    public enum Role {
-        ADMIN, MANAGER, CUSTOMER
-    }
+public abstract class User {
 
     private final UUID iD;
     private String firstName;
@@ -15,22 +11,20 @@ public class User {
     private String phoneNumber;
     private String email;
     private String password;
-    private Role role;
-    private final ArrayList<UUID> addresses = new ArrayList<>();
-    private final Cart cart;
-    private final ArrayList<UUID> managedStores = new ArrayList<>();
+    private final String joinedDate;
+    private Cart cart = new Cart();
 
-    public User(UUID iD, String firstName, String lastName, String phoneNumber, String email, String password, Role role) {
+    public User(UUID iD, String firstName, String lastName, String phoneNumber, String email, String password, String joinedDate) {
         this.iD = iD;
         this.firstName = firstName;
         this.lastName = lastName;
         this.password = password;
         this.phoneNumber = phoneNumber;
         this.email = email;
-        this.role = role;
-        this.cart = new Cart(iD);
+        this.joinedDate = joinedDate;
     }
 
+    public abstract UserRole getRole();
 
     // Update methods
     public void setFirstName(String firstName) {
@@ -53,37 +47,6 @@ public class User {
         this.email = email;
     }
 
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
-    // Address management
-    public void addAddress(UUID iD, String country, String city, String postalCode, String additionalInfo) {
-        addresses.add(iD);
-    }
-
-    public void removeAddress(UUID addressId) {
-        addresses.remove(addressId);
-    }
-
-    // Managed store management
-    public void addManagedStore(Store store) {
-        managedStores.add(store.getId());
-    }
-
-    public void removeManagedStore(Store store) {
-        managedStores.remove(store.getId());
-    }
-
-    // Role checks
-    public boolean isAdmin() {
-        return role == Role.ADMIN;
-    }
-
-    public boolean isManager() {
-        return role == Role.MANAGER;
-    }
-
     // Getters
     public UUID getId() {
         return iD;
@@ -101,23 +64,23 @@ public class User {
         return password;
     }
 
-    public Cart getCart() {
-        return cart;
-    }
-
     public String getPhoneNumber() {
         return phoneNumber;
-    }
-
-    public ArrayList<UUID> getAddresses() {
-        return addresses;
     }
 
     public String getEmail() {
         return email;
     }
 
-    public ArrayList<UUID> getManagedStores() {
-        return managedStores;
+    public String getJoinedDate() {
+        return joinedDate;
+    }
+
+    public Cart getCart() {
+        return cart;
+    }
+
+    public void setCart(Cart cart) {
+        this.cart = cart;
     }
 }

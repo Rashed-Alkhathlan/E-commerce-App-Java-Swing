@@ -1,23 +1,25 @@
 package GUI;
 
-import Objects.Main;
+import Objects.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
 import java.util.Stack;
+import java.util.UUID;
+import java.util.function.Function;
 
 public final class MyFrame {
     private static final JFrame frame = new JFrame("ShopSphere");
-    private static final CardLayout cardLayout = new CardLayout();
-    private static final JPanel mainPanel = new JPanel(cardLayout);
+    private static final JPanel mainPanel = new JPanel();
+    private static JPanel loadingPanel;
     private static final Stack<String> history = new Stack<>();
+    private static boolean inAnimation = false;
+
+    private static final HashMap<String, Function<Object, JPanel>> pages = new HashMap<>();
 
     private static final int width = 1300;
     private static final int height = 800;
-
-    public MyFrame() {
-        initFrame();
-    }
 
     public static int getWidth() {
         return width;
@@ -27,82 +29,160 @@ public final class MyFrame {
         return height;
     }
 
+    public static JFrame getFrame() {
+        return frame;
+    }
+
+    public static boolean isInAnimation() {
+        return inAnimation;
+    }
+
+    public static void setInAnimation(boolean animation) {
+        inAnimation = animation;
+    }
+
+    public MyFrame() {
+        initFrame();
+    }
+
     private void initFrame() {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(true);
         frame.setMinimumSize(new Dimension(width, height));
-        //frame.setUndecorated(true);
 
-        loadPanels();
-        history.push("HomePage");
-        switchToPage("HomePage");
+        setupLoadingPanel();
+        loadPages();
+        showPage("StartPage");
 
+        mainPanel.setLayout(new BorderLayout());
+        frame.add(mainPanel, BorderLayout.CENTER);
 
-        frame.add(mainPanel);
         frame.pack();
         frame.setVisible(true);
     }
 
-    private static void loadPanels() {
-        mainPanel.setPreferredSize(new Dimension(width, height));
-//        mainPanel.add(new StartPage(), "StartPage");
-//        mainPanel.add(new LoginPage(), "LoginPage");
-//        mainPanel.add(new StoresPage(), "StoresPage");
-//        mainPanel.add(new CartPage(), "CartPage");
-//        mainPanel.add(new AccountPage(), "AccountPage");
-//        mainPanel.add(new AdminPage(), "AdminPage");
-//        mainPanel.add(new RegisterPage(), "RegisterPage");
-//        mainPanel.add(new HomePage(), "HomePage");
+    private void loadPages() {
+        pages.put("StartPage", e -> new StartPage());
+        pages.put("HomePage", e -> new HomePage());
+        pages.put("CartPage", e -> new CartPage());
+        pages.put("StoresPage", e -> new StoresPage());
+        pages.put("ProductsPage", e -> new ProductsPage((UUID)e));
+        pages.put("RegisterPage", e -> Main.isSignedIn() ? new HomePage() : new RegisterPage());
+        pages.put("LoginPage", e -> Main.isSignedIn() ? new HomePage() : new LoginPage());
+        pages.put("CheckoutPage", e -> Main.isSignedIn() ? new CheckoutPage() : new LoginPage());
+        pages.put("AccountPage", e -> Main.isSignedIn() ? new AccountPage() : new LoginPage());
     }
 
-    static void switchToPage(String pageName) {
-        if (pageName.equals("CheckoutPage") && !Main.isSignedIn()) {pageName = "StartPage";}
-        if (pageName.equals("AccountPage") && !Main.isSignedIn()) {pageName = "StartPage";}
+    public static void showPage(String pageName) {
         if (pageName.equals("PreviousPage")) {history.pop(); pageName = history.peek();}
-        if (!pageName.equals(history.peek())) {history.push(pageName);}
-
-        mainPanel.removeAll();
-
-        switch(pageName) {
-            case "HomePage":
-                mainPanel.add(new HomePage());
-                break;
-            case "StoresPage":
-                mainPanel.add(new StoresPage());
-                break;
-            case "ProductsPage":
-                mainPanel.add(new ProductsPage());
-                break;
-            case "RegisterPage":
-                mainPanel.add(new RegisterPage());
-                break;
-            case "LoginPage":
-                mainPanel.add(new LoginPage());
-                break;
-            case "StartPage":
-                mainPanel.add(new StartPage());
-                break;
-            case "AccountPage":
-                mainPanel.add(new AccountPage());
-                break;
-            case "AdminPage":
-                mainPanel.add(new AdminPage());
-                break;
-            case "ManagerPage":
-                mainPanel.add(new ManagerPage());
-                break;
-            case "CheckoutPage":
-                mainPanel.add(new CheckoutPage());
-                break;
-            case "CartPage":
-                mainPanel.add(new CartPage());
-                break;
-            case "ProductPage":
-                mainPanel.add(new ProductPage());
-                break;
-        }
-
-        mainPanel.revalidate();
-        mainPanel.repaint();
+       showPage(pageName, null);
     }
+
+    public static void showPage(String pageName, Object param) {
+        history.push(pageName);
+        load(() -> {
+            mainPanel.removeAll();
+            mainPanel.add(pages.get(pageName).apply(param));
+            mainPanel.revalidate();
+            mainPanel.repaint();
+        });
+    }
+
+    public static void reloadPage() {
+        showPage(history.peek());
+    }
+
+    public static void load(Runnable backgroundTask) {
+        loadingPanel.setVisible(true);
+        loadingPanel.revalidate();
+        loadingPanel.repaint();
+
+        new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() {
+                backgroundTask.run();
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                SwingUtilities.invokeLater(() -> loadingPanel.setVisible(false));
+            }
+        }.execute();
+    }
+
+    private void setupLoadingPanel() {
+        loadingPanel = new JPanel() {
+            private Timer timer; // Timer for the loading animation
+            private int angle = 0; // Rotation angle
+            private final int radius = 50; // Circle radius
+            private final int arcLength = 60; // Length of the arc
+
+            {
+                addHierarchyListener(e -> {
+                    if (isShowing()) {
+                        startAnimation();
+                    } else {
+                        stopAnimation();
+                    }
+                });
+            }
+
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g.create();
+
+                // Semi-transparent background
+                g2d.setColor(new Color(0, 0, 0, 100));
+                g2d.fillRect(0, 0, getWidth(), getHeight());
+
+                // Enable anti-aliasing
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                // Draw rotating arc
+                int centerX = getWidth() / 2;
+                int centerY = getHeight() / 2;
+                g2d.setColor(Color.WHITE);
+                g2d.setStroke(new BasicStroke(4)); // Thickness of the arc
+                g2d.drawArc(centerX - radius, centerY - radius, 2 * radius, 2 * radius, angle, arcLength);
+
+                g2d.dispose();
+            }
+
+            private void startAnimation() {
+                if (timer == null) {
+                    timer = new Timer(10, e -> {
+                        angle += 10; // Increment angle
+                        if (angle >= 360) {
+                            angle = 0;
+                        }
+                        loadingPanel.repaint(); // Repaint to show updated animation
+                    });
+                    timer.start();
+                }
+            }
+
+            private void stopAnimation() {
+                if (timer != null) {
+                    timer.stop();
+                    timer = null;
+                }
+            }
+        };
+
+        loadingPanel.setLayout(new GridBagLayout());
+        loadingPanel.setOpaque(false);
+        loadingPanel.setVisible(false);
+
+        JLabel loadingLabel = new JLabel("Loading...");
+        loadingLabel.setForeground(Color.WHITE);
+        loadingLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        loadingLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+        loadingPanel.add(loadingLabel);
+
+        frame.setGlassPane(loadingPanel);
+    }
+
 }

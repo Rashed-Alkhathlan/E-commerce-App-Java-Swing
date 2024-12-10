@@ -1,19 +1,25 @@
 package GUI;
 
+import Components.Button;
+import Components.Panel;
+import Components.TextField;
 import Services.UsersService;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class RegisterPage extends Page {
 
-    private final JButton registerButton = new JButton("Register");
-    private final JButton backButton = new JButton("Back");
-    private final JTextField firstNameField = new JTextField();
-    private final JTextField lastNameField = new JTextField();
-    private final JTextField phoneNumberField = new JTextField();
-    private final JTextField emailField = new JTextField();
-    private final JTextField passwordField = new JTextField();
-    private final JTextField confirmPasswordField = new JTextField();
+    private final Panel registerPanel = new Panel();
+
+    private final Button registerButton = new Button("Register");
+    private final Button backButton = new Button("Back");
+    private final TextField firstNameField = new TextField("Enter first name");
+    private final TextField lastNameField = new TextField("Enter last name");
+    private final TextField phoneNumberField = new TextField("Enter phone number");
+    private final TextField emailField = new TextField("(optional) Enter email");
+    private final TextField passwordField = new TextField("Enter password");
+    private final TextField confirmPasswordField = new TextField("Confirm password");
     private final JLabel firstNameLabel = new JLabel("First Name:*");
     private final JLabel lastNameLabel = new JLabel("Last Name:*");
     private final JLabel phoneNumberLabel = new JLabel("Phone Number:*");
@@ -21,7 +27,7 @@ public class RegisterPage extends Page {
     private final JLabel passwordLabel = new JLabel("Password:*");
     private final JLabel confirmPasswordLabel = new JLabel("Confirm Password:*");
     private final JLabel warningLabel = new JLabel("", JLabel.CENTER);
-    private final JLabel titleLabel = new JLabel();
+    private final JLabel titleLabel = new JLabel("Create Account");
 
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$";
     private static final String PHONE_REGEX = "^\\+?\\d{10,15}$";
@@ -34,53 +40,146 @@ public class RegisterPage extends Page {
 
     @Override
     protected void initPage() {
-        defaultBackground();
+        setupBackground();
         actionListener();
-
-        setButton(registerButton, sidePanel, (sidePanelWidth / 2) - 125, (sidePanelHeight / 2) + 300, 250, 25);
-        setButton(backButton, sidePanel, (sidePanelWidth / 2) - 125, (sidePanelHeight / 2) + 350, 250, 25);
-
-        setTextField(firstNameField, sidePanel, (sidePanelWidth / 2) - 125, (sidePanelHeight / 2) - 150, 110, 25);
-        setTextField(lastNameField, sidePanel, (sidePanelWidth / 2) + 15, (sidePanelHeight / 2) - 150, 110, 25);
-        setTextField(phoneNumberField, sidePanel, (sidePanelWidth / 2) - 125, (sidePanelHeight / 2) - 100, 110, 25);
-        setTextField(emailField, sidePanel, (sidePanelWidth / 2) - 125, (sidePanelHeight / 2) - 50, 250, 25);
-        setTextField(passwordField, sidePanel, (sidePanelWidth / 2) - 125, (sidePanelHeight / 2) + 10, 250, 25);
-        setTextField(confirmPasswordField, sidePanel, (sidePanelWidth / 2) - 125, (sidePanelHeight / 2) + 60, 250, 25);
-        setLabel(firstNameLabel, sidePanel, (sidePanelWidth / 2) - 125, (sidePanelHeight / 2) - 175, 110, 25);
-        setLabel(lastNameLabel, sidePanel, (sidePanelWidth / 2) + 15, (sidePanelHeight / 2) - 175, 110, 25);
-        setLabel(phoneNumberLabel, sidePanel, (sidePanelWidth / 2) - 125, (sidePanelHeight / 2) - 125, 100, 25);
-        setLabel(emailLabel, sidePanel, (sidePanelWidth / 2) - 125, (sidePanelHeight / 2) - 75, 250, 25);
-        setLabel(passwordLabel, sidePanel, (sidePanelWidth / 2) - 125, (sidePanelHeight / 2) - 15, 250, 25);
-        setLabel(confirmPasswordLabel, sidePanel, (sidePanelWidth / 2) - 125, (sidePanelHeight / 2) + 35, 250, 25);
-        setLabel(warningLabel, sidePanel, (sidePanelWidth / 2) - 100, (sidePanelHeight / 2) + 225, 200, 25);
+        setupMenu();
+        setupRegisterPanel();
+        setupLayout();
     }
 
-    @Override
     protected void actionListener() {
         switchToPageWhenPressed(backButton, "PreviousPage");
         registerButton.addActionListener(e -> getInput());
     }
 
+    private void setupRegisterPanel() {
+        registerPanel.setArch(20);
+        registerPanel.setBackground(Color.WHITE);
+
+        titleLabel.setOpaque(false);
+        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 24));
+
+        warningLabel.setForeground(Color.RED);
+        warningLabel.setFont(new Font("SansSerif", Font.ITALIC, 11));
+
+        setupRegisterPanelLayout();
+    }
+
+    private void setupLayout() {
+        GroupLayout layout = new GroupLayout(contentPanel);
+        contentPanel.setLayout(layout);
+
+        // Create horizontal group
+        layout.setHorizontalGroup(
+                layout.createSequentialGroup()
+                        .addContainerGap(Short.MAX_VALUE, Short.MAX_VALUE)
+                        .addComponent(registerPanel, 400, 500, 600)
+                        .addContainerGap(Short.MAX_VALUE, Short.MAX_VALUE)
+        );
+
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                        .addContainerGap(60, Short.MAX_VALUE)
+                        .addComponent(registerPanel, 600, 700, 800)
+                        .addContainerGap(60, Short.MAX_VALUE)
+        );
+    }
+    
+    private void setupRegisterPanelLayout() {
+        GroupLayout layout = new GroupLayout(registerPanel);
+        registerPanel.setLayout(layout);
+
+        // Create horizontal group
+        layout.setHorizontalGroup(
+                layout.createSequentialGroup()
+                        .addContainerGap(40, 60)
+                        .addGroup(layout.createParallelGroup()
+                                .addComponent(titleLabel, GroupLayout.Alignment.CENTER)
+                                .addGroup(layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup()
+                                                .addComponent(firstNameLabel)
+                                                .addComponent(firstNameField))
+                                        .addGap(40)
+                                        .addGroup(layout.createParallelGroup()
+                                                .addComponent(lastNameLabel)
+                                                .addComponent(lastNameField)))
+                                .addComponent(phoneNumberLabel)
+                                .addComponent(phoneNumberField)
+                                .addComponent(emailLabel)
+                                .addComponent(emailField)
+                                .addComponent(passwordLabel)
+                                .addComponent(passwordField)
+                                .addComponent(confirmPasswordLabel)
+                                .addComponent(confirmPasswordField)
+                                .addComponent(warningLabel, GroupLayout.Alignment.CENTER)
+                                .addComponent(registerButton, GroupLayout.Alignment.CENTER, 100, 250, 250)
+                                .addComponent(backButton, GroupLayout.Alignment.CENTER, 100, 250, 250))
+                        .addContainerGap(40, 60)
+        );
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                        .addContainerGap(100, 100)
+                        .addGap(30)
+                        .addComponent(titleLabel, 40 ,40, 40)
+                        .addGap(20)
+                        .addGroup(layout.createParallelGroup()
+                                .addGroup(layout.createSequentialGroup()
+                                        .addComponent(firstNameLabel, 30, 30, 30)
+                                        .addGap(5)
+                                        .addComponent(firstNameField, 30, 30, 30))
+                                .addGroup(layout.createSequentialGroup()
+                                        .addComponent(lastNameLabel, 30, 30, 30)
+                                        .addGap(5)
+                                        .addComponent(lastNameField, 30, 30, 30)))
+                        .addGap(25)
+                        .addComponent(phoneNumberLabel, 30, 30, 30)
+                        .addGap(5)
+                        .addComponent(phoneNumberField, 30, 30, 30)
+                        .addGap(15)
+                        .addComponent(emailLabel, 30, 30, 30)
+                        .addGap(5)
+                        .addComponent(emailField, 30, 30, 30)
+                        .addGap(20)
+                        .addComponent(passwordLabel, 30, 30, 30)
+                        .addGap(5)
+                        .addComponent(passwordField, 30, 30, 30)
+                        .addGap(10)
+                        .addComponent(confirmPasswordLabel, 30, 30, 30)
+                        .addGap(5)
+                        .addComponent(confirmPasswordField, 30, 30, 30)
+                        .addGap(30, 50, 60)
+                        .addComponent(warningLabel, 30, 30, 30)
+                        .addGap(10)
+                        .addComponent(registerButton, 30, 30, 30)
+                        .addGap(15)
+                        .addComponent(backButton, 30, 30, 30)
+                        .addGap(50)
+                        .addContainerGap(100, 100)
+
+        );
+    }
+
     private void getInput() {
-        int response;
         if (firstNameField.getText().isEmpty() || lastNameField.getText().isEmpty() || phoneNumberField.getText().isEmpty() || passwordField.getText().isEmpty()) {
-            updateWarningLabel("Fill mandatory fields.");
+            updateWarningLabel("Please fill mandatory fields.");
         } else if (!phoneNumberField.getText().matches(PHONE_REGEX)) {
-            updateWarningLabel("Enter a valid phone number.");
+            updateWarningLabel("Please enter a valid phone number.");
         } else if (!emailField.getText().isEmpty() && !emailField.getText().matches(EMAIL_REGEX)) {
-            updateWarningLabel("Enter a valid email address.");
+            updateWarningLabel("Please enter a valid email address.");
         } else if (!passwordField.getText().matches(PASSWORD_REGEX)){
-            updateWarningLabel("Enter a valid password.");
+            updateWarningLabel("Please enter a valid password.");
         } else if (!passwordField.getText().equals(confirmPasswordField.getText())) {
             updateWarningLabel("Password not the same.");
         } else {
-            response = UsersService.Register(firstNameField.getText(), lastNameField.getText(), phoneNumberField.getText(), emailField.getText(), passwordField.getText());
+             int response = UsersService.register(firstNameField.getText(), lastNameField.getText(), phoneNumberField.getText(), emailField.getText(), passwordField.getText());
             if (response == -1) {
                 updateWarningLabel("Phone number already in use.");
             } else if (response == 1) {
                 updateWarningLabel("email already in use.");
             } else {
-                updateWarningLabel("");
+                warningLabel.setForeground(Color.GRAY);
+                updateWarningLabel("Account created successfully. Redirecting...");
+                MyFrame.showPage("HomePage");
             }
         }
     }

@@ -1,47 +1,34 @@
 package Objects;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class Cart {
-    private final UUID userId;
     private double totalPrice = 0;
     private int numberOfProducts = 0;
-    private final Map<UUID, Integer> products = new HashMap<>();
-
-    public Cart(UUID userId) {
-        this.userId = userId;
-    }
-
+    private final HashMap<Product, Integer> products = new HashMap<>();
 
     public void addProduct(Product product, int quantity) {
-        UUID productId = product.getId();
-        products.put(productId, products.getOrDefault(productId, 0) + quantity);
-        totalPrice += product.getPrice();
-        numberOfProducts++;
+        products.put(product, products.getOrDefault(product, 0) + quantity);
+        totalPrice += product.getPrice() * quantity;
+        numberOfProducts += quantity;
     }
 
     public void removeProduct(Product product) {
         UUID productId = product.getId();
-        if (products.containsKey(productId)) {
-            if (products.get(productId) <= 1) {
+        if (products.containsKey(product)) {
+            if (products.get(product) <= 1) {
                 totalPrice -= product.getPrice();
-                products.remove(productId);
+                products.remove(product);
             } else {
                 totalPrice -= product.getPrice();
-                products.put(productId, products.get(productId) - 1);
+                products.put(product, products.get(product) - 1);
             }
         }
         numberOfProducts--;
     }
 
-    public Map<UUID, Integer> getProducts() {
-        return products;
-    }
-
-    public UUID getUserId() {
-        return userId;
+    public ArrayList<HashMap.Entry<Product, Integer>> getProducts() {
+        return new ArrayList<>(products.entrySet());
     }
 
     public int getNumberOfProducts() {

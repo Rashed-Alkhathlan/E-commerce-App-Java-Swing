@@ -17,6 +17,16 @@ public final class Images {
         return new ImageIcon(scaledImg);
     }
 
+    public static ImageIcon getJPGImage(String imgName, int width, int height) {
+        ImageIcon imgIcon = new ImageIcon("src/Resources/" + imgName + ".jpg");
+        Image scaledImg = imgIcon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        return new ImageIcon(scaledImg);
+    }
+
+    public static ImageIcon getJPGImage(String imgName) {
+        return new ImageIcon("src/Resources/" + imgName + ".jpg");
+    }
+
     public static ImageIcon getImage(String imgName) {
         return new ImageIcon("src/Resources/" + imgName + ".png");
     }

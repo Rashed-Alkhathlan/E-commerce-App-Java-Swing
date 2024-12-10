@@ -6,10 +6,19 @@ import java.sql.*;
 
 @SuppressWarnings("CallToPrintStackTrace")
 public class DBConnector {
-    private Connection connection;
+    static {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 
-    private static final String URL = "jdbc:mysql://192.168.3.119:3306/OnlineStore";
+    private Connection connection;
+    //private static final String URL = "jdbc:mysql://192.168.3.119:3306/OnlineStore";
+    private static final String URL = "jdbc:mysql://localhost:3306/ShopAppDatabase";
     private static final String USER = "root";
+
     private static final String PASSWORD = "ShopAppDB";
 
     DBConnector() {
@@ -19,14 +28,6 @@ public class DBConnector {
             e.printStackTrace();
         }
 
-    }
-
-    static {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
     }
 
     private static final class InstanceHolder {

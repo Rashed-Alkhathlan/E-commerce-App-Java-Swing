@@ -1,44 +1,43 @@
 package Objects;
 
-import java.util.ArrayList;
+import Enums.StoreStatus;
+
+import javax.swing.*;
 import java.util.UUID;
 
-//add id to constructor later.
 public class Store {
     private final UUID iD;
+    private final UUID ownerId;
     private String name;
     private String description;
-    private final ArrayList<UUID> managers = new ArrayList<>();
-    private final ArrayList<UUID> Products = new ArrayList<>();
+    private final String creationDate;
+    private ImageIcon mainImageIcon;
+    private StoreStatus status;
 
-    public Store(UUID iD, String name, String description) {
+    public Store(UUID iD, UUID ownerId, String name, String description, String creationDate, ImageIcon mainImageIcon, StoreStatus status) {
         this.iD = iD;
+        this.ownerId = ownerId;
         this.name = name;
+        this.description = description;
+        this.creationDate = creationDate;
+        this.mainImageIcon = mainImageIcon;
+        this.status = status;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDescription(String description) {
         this.description = description;
     }
 
-    public void changeName(String name) {
-        this.name = name;
+    public void setMainImageIcon(ImageIcon mainImageIcon) {
+        this.mainImageIcon = mainImageIcon;
     }
 
-    public void addManager(UUID manager) {
-        this.managers.add(manager);
-    }
-
-    public void removeManager(UUID manager) {
-        this.managers.remove(manager);
-    }
-
-    public void changeDescription(String description) {
-        this.description = description;
-    }
-
-    public void addProduct(Product product) {
-        Products.add(product.getId());
-    }
-
-    public void removeProduct(Product product) {
-        Products.remove(product.getId());
+    public void setStatus(StoreStatus status) {
+        this.status = status;
     }
 
 
@@ -50,19 +49,23 @@ public class Store {
         return name;
     }
 
-    public ArrayList<UUID> getManagers() {
-        return managers;
-    }
-
     public String getDescription() {
         return description;
     }
 
-    public ArrayList<UUID> getProducts() {
-        return Products;
+    public String getCreationDate() {
+        return creationDate;
     }
 
-    public int getNumberOfProducts() {
-        return Products.size();
+    public StoreStatus getStatus() {
+        return status;
+    }
+
+    public UUID getOwnerId() {
+        return ownerId;
+    }
+
+    public ImageIcon getMainImageIcon() {
+        return mainImageIcon;
     }
 }

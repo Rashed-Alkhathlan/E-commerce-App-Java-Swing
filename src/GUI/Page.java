@@ -1,67 +1,71 @@
 package GUI;
 
-import GUI_Components.*;
-import GUI_Components.Menu;
+import Components.*;
+import Components.Menu;
+import Components.Panel;
 
 import javax.swing.*;
 import java.awt.*;
 
 public abstract class Page extends JPanel {
 
-    protected JPanel centerPanel;
-    protected JPanel sidePanel;
-    protected Header headerPanel;
-    protected Menu menuPanel;
+    protected abstract void initPage();
 
+    protected JPanel backgroundPanel;
+    protected JPanel contentPanel;
+    protected JPanel sidePanel;
+
+    protected Header headerPanel;
     protected int frameWidth = MyFrame.getWidth();
     protected int frameHeight = MyFrame.getHeight();
     protected int sidePanelWidth = 300;
+
     protected int sidePanelHeight = frameHeight;
 
-    protected abstract void initPage();
-    protected abstract void actionListener();
-
-    Page() {
-        this.setLayout(new BorderLayout(0, 0));
-        this.setBounds(0, 0, frameWidth, frameHeight);
+    protected Page() {
+        setLayout(new BorderLayout(0, 0));
+        setBounds(0, 0, frameWidth, frameHeight);
     }
 
-    protected void defaultBackground() {
-        defaultBackground(true);
+    protected void setupBackground() {
+        backgroundPanel = new JPanel();
+        backgroundPanel.setLayout(new BorderLayout());
+
+        headerPanel = new Header();
+        headerPanel.addCartButtonAction(e -> MyFrame.showPage("CartPage"));
+        headerPanel.addAccountButtonAction(e -> MyFrame.showPage("AccountPage"));
+
+        contentPanel = new JPanel();
+        contentPanel.setLayout(new BorderLayout());
+
+        backgroundPanel.add(headerPanel, BorderLayout.NORTH);
+        backgroundPanel.add(contentPanel, BorderLayout.CENTER);
+
+        add(backgroundPanel, BorderLayout.CENTER);
     }
 
-    protected void defaultBackground(boolean makeSidePanel) {
-        headerPanel = new Header("#ffffff", "#ffffff");
+    protected void addSidePanel() {
+        sidePanel = new Panel("#ad5389", "#3c1053");
+        sidePanel.setLayout(null);
+        sidePanel.setPreferredSize(new Dimension(sidePanelWidth, 0));
+        contentPanel.add(sidePanel, BorderLayout.EAST);
+    }
+
+    protected void setupMenu() {
+        Menu menuPanel = new Menu();
+
+        menuPanel.addDivider();
+        menuPanel.addButton("Home", "HomeImg", e -> MyFrame.showPage("HomePage"));
+        menuPanel.addButton("Browse Stores", "StoresImg", e -> MyFrame.showPage("StoresPage"));
+        menuPanel.addButton("Browse Products", "ProductsImg", e -> MyFrame.showPage("ProductsPage"));
+        menuPanel.addDivider();
+        menuPanel.addLabel("Shop by Category:");
+        menuPanel.addButton("Electronics", "ElecImg", e -> MyFrame.showPage("HomePage"));
+        menuPanel.addButton("Accessories", "AccsImg", e -> MyFrame.showPage("HomePage"));
+        menuPanel.addButton("Arts & Crafts", "ArtImg", e -> MyFrame.showPage("HomePage"));
+        menuPanel.addButton("Outdoor", "OutImg", e -> MyFrame.showPage("HomePage"));
+
         headerPanel.addMenuButtonAction(e -> menuPanel.slide());
-
-        centerPanel = new JPanelGradiant("#F2F2F2", "#EAEAEA");
-        centerPanel.setLayout(new BorderLayout());
-        centerPanel.add(headerPanel, BorderLayout.NORTH);
-
-        if (makeSidePanel) {
-            sidePanel = new JPanelGradiant("#0F2027", "#2C5364");
-            sidePanel.setLayout(null);
-            sidePanel.setPreferredSize(new Dimension(sidePanelWidth, 0));
-            centerPanel.add(sidePanel, BorderLayout.EAST);
-        }
-
-        setupMenu();
-        add(centerPanel, BorderLayout.CENTER);
-    }
-
-    private void setupMenu() {
-        menuPanel = new Menu("#56CCF2", "#2F80ED");
-
-        menuPanel.addDivider();
-        menuPanel.addButton(1, "Browse Stores", "StoresImg", e -> MyFrame.switchToPage("StoresPage"));
-        menuPanel.addButton(2, "Browse Products", "ProductsImg", e -> MyFrame.switchToPage("ProductsPage"));
-        menuPanel.addDivider();
-        menuPanel.addLabel("Shop by Department:");
-        menuPanel.addButton(3, "Electronics", "ElecImg", e -> MyFrame.switchToPage("HomePage"));
-        menuPanel.addButton(4, "Accessories", "AccsImg", e -> MyFrame.switchToPage("HomePage"));
-        menuPanel.addButton(5, "Arts & Crafts", "ArtImg", e -> MyFrame.switchToPage("HomePage"));
-        menuPanel.addButton(6, "Outdoor", "OutImg", e -> MyFrame.switchToPage("HomePage"));
-
         add(menuPanel, BorderLayout.WEST);
     }
 
@@ -71,17 +75,7 @@ public abstract class Page extends JPanel {
         panel.add(button);
     }
 
-    protected void setLabel(JLabel label, JPanel panel, int x , int y, int width, int height) {
-        label.setBounds(x, y, width, height);
-        panel.add(label);
-    }
-
-    protected void setTextField(JTextField textField, JPanel panel, int x, int y, int width, int height) {
-        textField.setBounds(x, y, width, height);
-        panel.add(textField);
-    }
-
     public static void switchToPageWhenPressed(JButton button, String pageName) {
-        button.addActionListener(e -> MyFrame.switchToPage(pageName));
+        button.addActionListener(e -> MyFrame.showPage(pageName));
     }
 }

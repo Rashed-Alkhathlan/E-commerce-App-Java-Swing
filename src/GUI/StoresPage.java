@@ -1,29 +1,36 @@
 package GUI;
 
-import Objects.Product;
-import Objects.Store;
-import Services.CartService;
-import Services.ProductsService;
-import Services.StoresService;
+import Components.TextField;
+import Components.Button;
+import Components.ScrollPane;
+import Enums.StoreStatus;
+import Objects.*;
+import Services.*;
 import Utils.Images;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 
 public class StoresPage extends Page {
     private final JPanel storesButtonsPanel = new JPanel();
-    private final JPanel productsButtonsPanel = new JPanel();
-    private final JScrollPane productsScrollPane = new JScrollPane(productsButtonsPanel);
-    private final JScrollPane storesScrollPane = new JScrollPane(storesButtonsPanel);
+    private final ScrollPane storesScrollPane = new ScrollPane(storesButtonsPanel);
     private final JPanel searchPanel = new JPanel();
-    private final JTextField searchField = new JTextField(20);
-    private final JButton searchButton = new JButton(Images.getImage("SearchImg"));
-    private final JButton backButton =new JButton("Back");
+    private final TextField searchField = new TextField("Search here...");
+    private final Button searchButton = new Button(Images.getImage("SearchImg"));
 
     private final Color buttonColor = Color.WHITE;
-    private Store currentStore = null;
-    private int totalProducts = 0;
+    private int totalStores;
+    ArrayList<Store> stores;
+
+    private final int storeButtonWidth = 300;
+    private final int storeButtonHeight = 280;
+
+    private final int iconWidth = 300;
+    private final int iconHeight = 250;
+
 
     StoresPage() {
         initPage();
@@ -31,72 +38,61 @@ public class StoresPage extends Page {
 
     @Override
     protected void initPage() {
-        defaultBackground();
+        setupBackground();
+        setupMenu();
         actionListener();
 
-        sidePanel.setLayout(new BorderLayout(0, 0));
-        sidePanel.add(backButton, BorderLayout.NORTH);
-
         setupStoresPanel();
-        setupProductsPanel();
-        setupSearchBarPanel();
+        setupSearchPanel();
     }
 
-    @Override
     public void actionListener() {
-        switchToPageWhenPressed(backButton, "PreviousPage");
-        productsButtonsPanel.addComponentListener(new ComponentAdapter() {
+        storesScrollPane.getVerticalScrollBar().addAdjustmentListener(e -> new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() {
+                loadVisibleStores();
+                return null;
+            }
+        }.execute());
+        storesScrollPane.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
-                updateProductsPanelHeight(totalProducts);
-            }
-        });
-    }
-
-    private void setupStoresPanel() {
-        storesButtonsPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        storesButtonsPanel.setOpaque(false);
-        storesScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        storesScrollPane.setOpaque(false);
-        storesScrollPane.getViewport().setOpaque(false);
-        sidePanel.add(storesScrollPane, BorderLayout.CENTER);
-        updateStoresPanel("");
-    }
-
-    private void setupProductsPanel() {
-        productsButtonsPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 6, 6));
-        productsButtonsPanel.setOpaque(false);
-        productsScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        productsScrollPane.setOpaque(false);
-        productsScrollPane.getViewport().setOpaque(false);
-        centerPanel.add(productsScrollPane, BorderLayout.CENTER);
-    }
-
-    private void setupSearchBarPanel() {
-        searchField.setText("Search for stores...");
-        searchField.setPreferredSize(new Dimension(600, 30));
-        searchField.addFocusListener(new FocusListener() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                if (searchField.getText().equals("Search for stores...")) {
-                    searchField.setText("");
-                }
-            }
-
-            @Override
-            public void focusLost(FocusEvent e) {
-                if (searchField.getText().isEmpty()) {
-                    searchField.setText("Search for stores...");
+                if (!MyFrame.isInAnimation()) {
+                    new SwingWorker<Void, Void>() {
+                        @Override
+                        protected Void doInBackground() {
+                            storesButtonsPanel.removeAll();
+                            loadVisibleStores();
+                            return null;
+                        }
+                    }.execute();
                 }
             }
         });
         searchButton.addActionListener(e -> {
             String searchTerm = searchField.getText().toLowerCase();
-            if (searchTerm.equals("search for stores...")) {
-                searchTerm = "";
-            }
-            updateStoresPanel(searchTerm);
+            new SwingWorker<Void, Void>() {
+                @Override
+                protected Void doInBackground() {
+                    updateStoresPanel(searchTerm);
+                    loadVisibleStores();
+                    return null;
+                }
+            }.execute();
         });
+    }
+
+    private void setupStoresPanel() {
+        storesButtonsPanel.setLayout(null);
+        storesButtonsPanel.setOpaque(false);
+        contentPanel.add(storesScrollPane, BorderLayout.CENTER);
+        updateStoresPanel("");
+    }
+
+    private void setupSearchPanel() {
+        searchField.setPreferredSize(new Dimension(300, 30));
+        searchButton.setPreferredSize(new Dimension(30, 30));
+        searchButton.setArch(0);
         searchPanel.setLayout(new GridBagLayout());
         searchPanel.setOpaque(false);
         searchPanel.add(searchField);
@@ -105,49 +101,91 @@ public class StoresPage extends Page {
     }
 
     private void updateStoresPanel(String searchTerm) {
-        SwingWorker<Void, Void> worker = new SwingWorker<>() {
-            int storesPanelHeight = 65;
-
-            @Override
-            protected Void doInBackground() {
-                storesButtonsPanel.removeAll();
-                storesButtonsPanel.setPreferredSize(new Dimension(storesScrollPane.getWidth(), storesPanelHeight));
-
-                for (Store store : StoresService.getStores()) {
-                    if (store.getName().toLowerCase().contains(searchTerm)) {
-                        storesPanelHeight += 65;
-                        JButton storeButton = getStoreButton(store);
-                        storesButtonsPanel.add(storeButton);
-                    }
-                }
-                return null;
-            }
-
-            @Override
-            protected void done() {
-                storesButtonsPanel.setPreferredSize(new Dimension(storesScrollPane.getWidth(), storesPanelHeight));
-                storesButtonsPanel.revalidate();
-                storesButtonsPanel.repaint();
-            }
-        };
-        worker.execute();
+        storesButtonsPanel.removeAll();
+        stores = StoresService.getStores(searchTerm);
+        stores.removeIf(store -> store.getStatus() == StoreStatus.CLOSED);
+        totalStores = stores.size();
     }
 
-    //Buttons for Stores:
-    private JButton getStoreButton(Store store) {
-        JButton storeButton = new JButton();
-        storeButton.setPreferredSize(new Dimension(250, 60));
-        storeButton.setLayout(new BorderLayout());
-        storeButton.setMargin(new Insets(0, 0, 0, 0));
+    private void loadVisibleStores() {
+        int panelWidth = storesScrollPane.getWidth();
+        int horizontalGap = 6, verticalGap = 6;
 
-        JLabel imageLabel = new JLabel();
+        int storesPerRow = Math.max(1, (panelWidth + horizontalGap) / (storeButtonWidth + horizontalGap));
+        int rows = (int) Math.ceil((double) totalStores / storesPerRow);
+
+        int totalHeight = rows * (storeButtonHeight + verticalGap) + 50;
+
+        storesButtonsPanel.setPreferredSize(new Dimension(panelWidth, totalHeight));
+
+        // Get the visible area of the JScrollPane
+        Rectangle visibleRect = storesScrollPane.getViewport().getViewRect();
+
+        int firstVisibleRow = Math.max(0, visibleRect.y / (storeButtonHeight + verticalGap));
+        int lastVisibleRow = Math.max(0, ((visibleRect.y + visibleRect.height) / (storeButtonHeight + verticalGap)) + 2);
+
+        if (firstVisibleRow > 0) {firstVisibleRow-= 2;}
+
+        // Calculate product indices for visible rows
+        int startIndex = firstVisibleRow * storesPerRow;
+        int endIndex = Math.min(lastVisibleRow * storesPerRow, totalStores);
+
+        // Clear buttons outside the visible area
+        for (Component component : storesButtonsPanel.getComponents()) {
+            if (component instanceof JButton button) {
+                int buttonIndex = (int) button.getClientProperty("index");
+                if (buttonIndex < startIndex || buttonIndex >= endIndex) {
+                    storesButtonsPanel.remove(button); // Remove buttons outside the visible area
+                }
+            }
+        }
+
+        // Add buttons in visible area
+        for (int i = startIndex; i < endIndex; i++) {
+            if (!isButtonVisible(i)) {
+                JButton storeButton = getStoreButton(stores.get(i));
+                storeButton.putClientProperty("index", i);
+
+                int row = i / storesPerRow;
+                int col = i % storesPerRow;
+                int x = (col * (storeButtonWidth + horizontalGap)) + ((panelWidth - (storesPerRow * (storeButtonWidth + horizontalGap))) / 2);
+                int y = row * (storeButtonHeight + verticalGap);
+
+                storeButton.setBounds(x, y, storeButtonWidth, storeButtonHeight);
+                storesButtonsPanel.add(storeButton);
+            }
+        }
+        storesButtonsPanel.revalidate();
+        storesButtonsPanel.repaint();
+    }
+
+    private boolean isButtonVisible(int index) {
+        for (Component component : storesButtonsPanel.getComponents()) {
+            if (component instanceof JButton button) {
+                Integer buttonIndex = (Integer) button.getClientProperty("index");
+                if (buttonIndex != null && buttonIndex == index) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    //Buttons for Stores
+    private JButton getStoreButton(Store store) {
+        Button storeButton = new Button();
+        storeButton.setArch(0);
+        storeButton.setPreferredSize(new Dimension(storeButtonWidth, storeButtonHeight));
+        storeButton.setBorder(new EmptyBorder(1, 1, 1, 1));
+        storeButton.setLayout(new BorderLayout());
+
+        JLabel imageLabel = new JLabel(Images.scaleImage(store.getMainImageIcon(), iconWidth, iconHeight));
         JPanel textPanel = getStoreButtonPanel(store);
 
-        storeButton.add(imageLabel, BorderLayout.WEST);
+        storeButton.add(imageLabel, BorderLayout.NORTH);
         storeButton.add(textPanel, BorderLayout.CENTER);
 
-        storeButton.addActionListener(e -> {if (store != currentStore) {updateProductsPanel(store); currentStore = store;}});
-
+        storeButton.addActionListener(e -> MyFrame.showPage("ProductsPage", store.getId()));
         return storeButton;
     }
 
@@ -155,7 +193,7 @@ public class StoresPage extends Page {
         JPanel textPanel = new JPanel();
         textPanel.setLayout(new BorderLayout());
         textPanel.setBackground(buttonColor);
-        textPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        textPanel.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 3));
 
         JLabel nameLabel = new JLabel(store.getName());
         nameLabel.setFont(new Font("Arial", Font.BOLD, 16));
@@ -165,96 +203,6 @@ public class StoresPage extends Page {
 
         textPanel.add(nameLabel, BorderLayout.NORTH);
         textPanel.add(descriptionLabel, BorderLayout.CENTER);
-        return textPanel;
-    }
-
-
-    //Panel that displays products when clicking on a store:
-    private void updateProductsPanel(Store store) {
-        totalProducts = 0;
-        SwingWorker<Void, Void> worker = new SwingWorker<>() {
-            @Override
-            protected Void doInBackground() {
-                productsButtonsPanel.removeAll();
-                productsButtonsPanel.setPreferredSize(new Dimension(productsScrollPane.getWidth(), 0));
-
-                for (Product product : ProductsService.getProducts(store.getId())) {
-                    JButton productButton = getProductButton(product);
-                    productsButtonsPanel.add(productButton);
-                    totalProducts++;
-                }
-                return null;
-            }
-
-            @Override
-            protected void done() {
-                updateProductsPanelHeight(totalProducts);
-            }
-        };
-        worker.execute();
-    }
-
-    private void updateProductsPanelHeight(int totalProducts) {
-        int productWidth = 165;  // Width of a product button
-        int productHeight = 230; // Height of a product button
-        int horizontalGap = 6;   // Horizontal gap between buttons
-        int verticalGap = 6;     // Vertical gap between rows
-
-        // Get the current width of the products panel
-        int panelWidth = productsScrollPane.getWidth();
-
-        // Calculate the number of products per row
-        int productsPerRow = Math.max(1, (panelWidth + horizontalGap) / (productWidth + horizontalGap));
-
-        // Calculate the number of rows required
-        int rows = (int) Math.ceil((double) totalProducts / productsPerRow);
-
-        // Calculate the total height needed for the panel
-        int totalHeight = rows * (productHeight + verticalGap);
-
-        // Set the preferred size of the productsButtonsPanel
-        productsButtonsPanel.setPreferredSize(new Dimension(0, totalHeight + 50));
-        productsButtonsPanel.revalidate();
-        productsButtonsPanel.repaint();
-    }
-
-
-    //Buttons for Products
-    private JButton getProductButton(Product product) {
-        JButton productButton = new JButton();
-        productButton.setPreferredSize(new Dimension(165, 230));
-        productButton.setLayout(new BorderLayout());
-        productButton.setMargin(new Insets(0, 0, 0, 0));
-
-        JLabel imageLabel = new JLabel(Images.scaleImage(product.getMainImageIcon(), 165, 165));
-        JPanel textPanel = getProductButtonPanel(product);
-
-        productButton.add(imageLabel, BorderLayout.NORTH);
-        productButton.add(textPanel, BorderLayout.CENTER);
-
-        productButton.addActionListener(e -> CartService.addToCart(product, 1));
-        return productButton;
-    }
-
-    private JPanel getProductButtonPanel(Product product) {
-        JPanel textPanel = new JPanel();
-        textPanel.setLayout(new BorderLayout());
-        textPanel.setBackground(buttonColor);
-        textPanel.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 3));
-
-        JLabel nameLabel = new JLabel(product.getName());
-        nameLabel.setFont(new Font("Arial", Font.BOLD, 16));
-
-        JLabel descriptionLabel = new JLabel("<html><i>" + product.getDescription() + "</i></html>");
-        descriptionLabel.setFont(new Font("Arial", Font.PLAIN, 12));
-
-        JLabel priceLabel = new JLabel("$" + product.getPrice());
-        priceLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-        priceLabel.setForeground(Color.GREEN);
-
-        textPanel.add(nameLabel, BorderLayout.NORTH);
-        textPanel.add(descriptionLabel, BorderLayout.CENTER);
-        textPanel.add(priceLabel, BorderLayout.SOUTH);
         return textPanel;
     }
 

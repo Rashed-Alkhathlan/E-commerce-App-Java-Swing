@@ -1,11 +1,13 @@
 package GUI;
 
+import Components.Button;
+
 import javax.swing.*;
 
 public class ProductPage extends Page {
-    private JButton addToCartButton = new JButton();
-    private JButton buyNowButton = new JButton();
-    private JButton backButton = new JButton();
+    private JButton addToCartButton = new Button();
+    private JButton buyNowButton = new Button();
+    private JButton backButton = new Button();
 
     public ProductPage() {
 
@@ -16,7 +18,6 @@ public class ProductPage extends Page {
 
     }
 
-    @Override
     protected void actionListener() {
 
     }

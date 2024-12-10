@@ -22,7 +22,6 @@ public class CheckoutPage extends Page {
 
     }
 
-    @Override
     protected void actionListener() {
 
     }

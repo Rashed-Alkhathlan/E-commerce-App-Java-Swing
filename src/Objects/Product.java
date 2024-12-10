@@ -1,21 +1,33 @@
 package Objects;
 
 import javax.swing.*;
-import java.util.ArrayList;
 import java.util.UUID;
 
 public class Product {
-    private final UUID iD;
-    private final UUID storeId;  // Links product to a specific store
+    private final UUID id;
+    private final UUID storeId;
     private String name;
     private String description;
     private double price;
     private int quantity;
     private ImageIcon mainImageIcon;
-    private final ArrayList<ImageIcon> images = new ArrayList<>();
 
-    public Product(UUID iD, UUID storeId, String name, String description, double price, int quantity, ImageIcon mainImageIcon) {
-        this.iD = iD;
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        Product product = (Product) obj;
+        return id != null && id.equals(product.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
+
+    public Product(UUID id, UUID storeId, String name, String description, double price, int quantity, ImageIcon mainImageIcon) {
+        this.id = id;
         this.storeId = storeId;
         this.name = name;
         this.description = description;
@@ -46,7 +58,7 @@ public class Product {
 
 
     public UUID getId() {
-        return iD;
+        return id;
     }
 
     public String getName() {

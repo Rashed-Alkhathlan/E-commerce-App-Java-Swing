@@ -11,7 +11,6 @@ public class ForgetPassPage extends Page {
 
     }
 
-    @Override
     protected void actionListener() {
 
     }
