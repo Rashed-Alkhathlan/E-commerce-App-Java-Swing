@@ -15,8 +15,9 @@ public class DBConnector {
     }
 
     private Connection connection;
-    //private static final String URL = "jdbc:mysql://192.168.3.119:3306/OnlineStore";
-    private static final String URL = "jdbc:mysql://localhost:3306/ShopAppDatabase";
+    private static final String URL = "jdbc:mysql://144.86.44.217:3306/ShopAppDatabase";
+    //private static final String URL = "jdbc:mysql://192.168.3.119:3306/ShopAppDatabase";
+    //private static final String URL = "jdbc:mysql://localhost:3306/ShopAppDatabase";
     private static final String USER = "root";
 
     private static final String PASSWORD = "ShopAppDB";
