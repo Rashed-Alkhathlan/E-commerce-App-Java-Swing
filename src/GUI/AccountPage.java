@@ -69,7 +69,7 @@ public class AccountPage extends Page {
         });
     }
 
-    private static class UserInfoPanel extends Panel {
+    private static class UserInfoPanel extends JPanel {
 
         private final Panel infoPanel = new Panel();
 
@@ -97,6 +97,7 @@ public class AccountPage extends Page {
 
         private void initPanel() {
             setupInfoPanel();
+            setupInfoLayout();
         }
 
         private void setupInfoPanel() {
@@ -127,14 +128,13 @@ public class AccountPage extends Page {
             userRole.setFont(new Font("SanSerif", Font.BOLD, 24));
             userRole.setArch(120);
 
-            add(infoPanel);
-            setupInfoLayout();
             setupInfoPanelLayout();
         }
 
         private void setupInfoLayout() {
             setLayout(new BorderLayout());
             setBorder(new EmptyBorder(40, 40, 40, 40));
+            add(infoPanel);
         }
 
         private void setupInfoPanelLayout() {
