@@ -139,6 +139,10 @@ public class TextField extends JTextField {
                 return true;
             }
 
+            if (!text.matches("-?\\d*\\.?\\d*")) {
+                return false;
+            }
+
             // Check if the text is a valid double or integer
             try {
                 Double.parseDouble(text);
