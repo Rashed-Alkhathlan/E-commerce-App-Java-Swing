@@ -11,14 +11,13 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public final class StoresService extends Service {
 
     private StoresService() {}
 
-    public static Store getStore(UUID ownerId) {
-        return database.getStore(ownerId);
+    public static Store getStore(UUID id) {
+        return database.getStore(id);
     }
 
     public static ArrayList<Store> getStores() {
@@ -47,16 +46,6 @@ public final class StoresService extends Service {
 
     public static int getStoreProductCount(UUID store_id) {
         return database.getAllProductsCount(store_id);
-    }
-
-    public static ArrayList<User> getStoreManagers(UUID store_id) {
-        return database.getAllStoreManagers(store_id);
-    }
-
-    public static String getStoreManagersNames(UUID store_id) {
-        return getStoreManagers(store_id).stream()
-                .map(manager -> manager.getFirstName() + " " + manager.getLastName())
-                .collect(Collectors.joining(", "));
     }
 
     public static Manager getStoreOwner(UUID store_Id) {

@@ -23,7 +23,7 @@ public class Menu extends Panel {
     private final HashMap<JLabel, JLabel> labels = new HashMap<>();
 
     private final JLabel extendedLogoLabel = new JLabel(Images.getImage("LargeLogoImg", 215, 75), JLabel.CENTER);;
-    private final JLabel collapsedLogoLabel = new JLabel(Images.getImage("SmallLogoImg", 60, 60), JLabel.CENTER);
+    private final JLabel collapsedLogoLabel = new JLabel(Images.getImage("SmallLogoImg", 50, 50), JLabel.CENTER);
 
     public Menu() {
         super(Main.getThemeColor1(), Main.getThemeColor2());

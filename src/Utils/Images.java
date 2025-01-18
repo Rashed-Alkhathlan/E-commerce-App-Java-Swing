@@ -37,6 +37,9 @@ public final class Images {
     }
 
     public static ImageIcon byteArrayToImageIcon(byte[] imageData) {
+        if (imageData == null) {
+            return getJPGImage("MissingImg");
+        }
         ByteArrayInputStream bais = new ByteArrayInputStream(imageData);
         try {
             return new ImageIcon(ImageIO.read(bais));
@@ -46,6 +49,9 @@ public final class Images {
     }
 
     public static byte[] imageIconToByteArray(ImageIcon icon) {
+        if (icon == null) {
+            return null;
+        }
         byte[] imageBytes;
         Image image = icon.getImage();
         BufferedImage bufferedImage = new BufferedImage(

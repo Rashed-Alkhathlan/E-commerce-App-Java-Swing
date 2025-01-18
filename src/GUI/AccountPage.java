@@ -54,6 +54,7 @@ public class AccountPage extends Page {
         menuPanel.addButton("User information", "ManImg", e -> switchToPanel(UserInfoPanel::new));
         menuPanel.addButton("Orders", "ProductsImg", e -> MyFrame.showPage("HomePage"));
         menuPanel.addButton("Addresses", "StoresImg", e -> switchToPanel(AddressesPanel::new));
+        menuPanel.addButton("Log Out", "ExitImg", e -> UsersService.logout());
         menuPanel.addDivider();
 
         headerPanel.addMenuButtonAction(e -> menuPanel.slide());

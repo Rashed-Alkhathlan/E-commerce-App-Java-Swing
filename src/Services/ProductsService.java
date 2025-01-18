@@ -37,4 +37,8 @@ public final class ProductsService extends Service {
     public static void registerProduct(UUID storeId, String name, String description, double price, int quantity, ImageIcon icon) {
         database.registerProduct(UUID.randomUUID(), storeId, name, description, price, quantity, icon);
     }
+
+    public static void deleteProduct(UUID id) {
+        database.deleteProduct(id);
+    }
 }

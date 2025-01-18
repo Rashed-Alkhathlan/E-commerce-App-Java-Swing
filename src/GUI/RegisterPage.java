@@ -2,6 +2,7 @@ package GUI;
 
 import Components.Button;
 import Components.Panel;
+import Components.PopupMessage;
 import Components.TextField;
 import Services.UsersService;
 
@@ -179,6 +180,7 @@ public class RegisterPage extends Page {
             } else {
                 warningLabel.setForeground(Color.GRAY);
                 updateWarningLabel("Account created successfully. Redirecting...");
+                new PopupMessage("Registered Successfully", PopupMessage.Type.SUCCESS);
             }
         }
     }

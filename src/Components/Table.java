@@ -29,12 +29,12 @@ public class Table extends JTable {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 TableHeader header = new TableHeader(value + "");
-                if (column == 4) {
+                if (value.equals("Type") || value.equals("Status")) {
                     header.setHorizontalAlignment(JLabel.CENTER);
                 }
                 if (column == 5) {
                     header.setHorizontalAlignment(JLabel.CENTER);
-                    getColumnModel().getColumn(5).setPreferredWidth(10);
+                    getColumnModel().getColumn(column).setPreferredWidth(20);
                 }
                 return header;
             }
@@ -44,7 +44,7 @@ public class Table extends JTable {
             public Component getTableCellRendererComponent(JTable jTable, Object value, boolean selected, boolean focus, int row, int column) {
                 if (value instanceof ActionListener) {
                     return new CellActionPanel((ActionListener) value);
-                } else if (column == 4) {
+                } else if (value.getClass().isEnum()) {
                     return new CellStatusPanel(value);
                 } else {
                     Component component = super.getTableCellRendererComponent(jTable, value, selected, focus, row, column);
@@ -101,7 +101,7 @@ public class Table extends JTable {
             setBackground(Color.WHITE);
             setFont(new Font("SanSerif", Font.BOLD, 12));
             setForeground(new Color(102, 102, 102));
-            setBorder(new EmptyBorder(10, 5, 10, 5));
+            setBorder(new EmptyBorder(10, 0, 10, 0));
         }
 
         @Override

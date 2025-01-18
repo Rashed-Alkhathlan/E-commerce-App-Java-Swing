@@ -26,7 +26,7 @@ public class StoresPage extends Page {
     ArrayList<Store> stores;
 
     private final int storeButtonWidth = 300;
-    private final int storeButtonHeight = 280;
+    private final int storeButtonHeight = 300;
 
     private final int iconWidth = 300;
     private final int iconHeight = 250;

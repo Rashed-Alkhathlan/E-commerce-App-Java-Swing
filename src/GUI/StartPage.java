@@ -15,7 +15,7 @@ public class StartPage extends Page {
     private final Button registerButton = new Button("Register");
     private final Button guestButton = new Button("Continue as guest");
     private final JLabel titleLabel = new JLabel("Welcome");
-    private final JLabel logoLabel = new JLabel(Images.getImage("SmallLogoImg", 200, 200));
+    private final JLabel logoLabel = new JLabel(Images.getImage("SmallLogoImg", 180, 180), SwingConstants.CENTER);
 
     StartPage() {
         initPage();

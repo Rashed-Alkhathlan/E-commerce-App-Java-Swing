@@ -59,11 +59,11 @@ public abstract class Page extends JPanel {
         menuPanel.addButton("Browse Stores", "StoresImg", e -> MyFrame.showPage("StoresPage"));
         menuPanel.addButton("Browse Products", "ProductsImg", e -> MyFrame.showPage("ProductsPage"));
         menuPanel.addDivider();
-        menuPanel.addLabel("Shop by Category:");
-        menuPanel.addButton("Electronics", "ElecImg", e -> MyFrame.showPage("HomePage"));
-        menuPanel.addButton("Accessories", "AccsImg", e -> MyFrame.showPage("HomePage"));
-        menuPanel.addButton("Arts & Crafts", "ArtImg", e -> MyFrame.showPage("HomePage"));
-        menuPanel.addButton("Outdoor", "OutImg", e -> MyFrame.showPage("HomePage"));
+//        menuPanel.addLabel("Shop by Category:");
+//        menuPanel.addButton("Electronics", "ElecImg", e -> MyFrame.showPage("HomePage"));
+//        menuPanel.addButton("Accessories", "AccsImg", e -> MyFrame.showPage("HomePage"));
+//        menuPanel.addButton("Arts & Crafts", "ArtImg", e -> MyFrame.showPage("HomePage"));
+//        menuPanel.addButton("Outdoor", "OutImg", e -> MyFrame.showPage("HomePage"));
 
         headerPanel.addMenuButtonAction(e -> menuPanel.slide());
         add(menuPanel, BorderLayout.WEST);

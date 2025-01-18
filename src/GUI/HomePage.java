@@ -2,6 +2,8 @@ package GUI;
 
 import Components.Button;
 import Components.CardPanel;
+import Enums.UserRole;
+import Objects.Main;
 import Services.ProductsService;
 import Services.StoresService;
 import Utils.Images;
@@ -12,7 +14,7 @@ import java.awt.*;
 public class HomePage extends Page {
     private final Button allProductsButton = new Button();
     private final Button allStoresButton = new Button();
-    private final Button allCategoriesButton = new Button();
+    private final Button accountButton = new Button();
 
     HomePage() {
         initPage();
@@ -35,10 +37,11 @@ public class HomePage extends Page {
         allProductsButton.setMargin(new Insets(0, 0, 0, 0));
         allProductsButton.add(panel1);
 
-        CardPanel panel2 = new CardPanel(Images.getImage("SearchImg", 30, 30), "Browse Categories", "Over 25+ Categories...", "Discover Various Categories");
-        allCategoriesButton.setPreferredSize(new Dimension(300, 200));
-        allCategoriesButton.setMargin(new Insets(0, 0, 0, 0));
-        allCategoriesButton.add(panel2);
+        String value = Main.getCurrentUser().getRole() == UserRole.MANAGER ? "Manage your Store and products" : Main.getCurrentUser().getRole() == UserRole.ADMIN ? "Manage and look over everything in the app" : "Login to be able to Checkout";
+        CardPanel panel2 = new CardPanel(Images.getImage("ManImg", 30, 30), "Account", value, "");
+        accountButton.setPreferredSize(new Dimension(300, 200));
+        accountButton.setMargin(new Insets(0, 0, 0, 0));
+        accountButton.add(panel2);
     }
 
     private void setupLayout() {
@@ -56,7 +59,7 @@ public class HomePage extends Page {
                         .addGap(20)
                         .addComponent(allProductsButton, 300, 300, 500)
                         .addGap(20)
-                        .addComponent(allCategoriesButton, 300, 300, 500)
+                        .addComponent(accountButton, 300, 300, 500)
                         .addContainerGap(100, Short.MAX_VALUE)
         );
 
@@ -67,13 +70,14 @@ public class HomePage extends Page {
                             .addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
                                     .addComponent(allStoresButton, 150, 150, 300)
                                     .addComponent(allProductsButton, 150, 150, 300)
-                                    .addComponent(allCategoriesButton, 150, 150, 300))
+                                    .addComponent(accountButton, 150, 150, 300))
                         .addContainerGap(200, Short.MAX_VALUE)
         );
     }
 
     protected void actionListener() {
-        switchToPageWhenPressed(allStoresButton, "StoresPage");
-        switchToPageWhenPressed(allProductsButton, "ProductsPage");
+        allStoresButton.addActionListener(e -> MyFrame.showPage("StoresPage"));
+        allProductsButton.addActionListener(e -> MyFrame.showPage("ProductsPage"));
+        accountButton.addActionListener(e -> {MyFrame.showPage("AccountPage");});
     }
 }

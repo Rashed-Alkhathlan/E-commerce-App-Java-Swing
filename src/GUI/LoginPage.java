@@ -2,6 +2,7 @@ package GUI;
 
 import Components.Button;
 import Components.Panel;
+import Components.PopupMessage;
 import Components.TextField;
 import Services.UsersService;
 
@@ -135,6 +136,7 @@ public class LoginPage extends Page {
         } else if (UsersService.login(phoneOrEmailField.getText(), passwordField.getText())) {
             warningLabel.setForeground(Color.GRAY);
             updateWarningLabel("Logged in successfully. Redirecting...");
+            new PopupMessage("Logged in Successfully", PopupMessage.Type.SUCCESS);
         } else if (phoneOrEmailField.getText().matches(PHONE_REGEX)){
             updateWarningLabel("Wrong phone number / password");
         } else if (phoneOrEmailField.getText().matches(EMAIL_REGEX)) {

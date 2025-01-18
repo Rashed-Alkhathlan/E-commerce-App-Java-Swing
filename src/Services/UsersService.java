@@ -10,6 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public final class UsersService extends Service {
 
@@ -20,7 +21,10 @@ public final class UsersService extends Service {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
         String date = LocalDate.now().format(formatter);
 
-        int response = database.register(iD, firstName, lastName, phoneNumber, email.isEmpty() ? null : email, password, date);
+        if (email == null || email.trim().isEmpty()) {
+            email = null;
+        }
+        int response = database.register(iD, firstName, lastName, phoneNumber, email, password, date);
 
         if (response == 0) {
             Cart oldCart = Main.getCurrentUser().getCart();
@@ -55,6 +59,10 @@ public final class UsersService extends Service {
         }
     }
 
+    public static void logout() {
+        Main.setCurrentUser(null);
+    }
+
     public static int getUsersCount(UserRole role) {
         return database.getAllUsersCount(role);
     }
@@ -81,7 +89,7 @@ public final class UsersService extends Service {
         String date = LocalDate.now().format(formatter);
 
         database.updateUser(user.getId(), user.getFirstName(), user.getLastName(), user.getPhoneNumber(), user.getEmail(), user.getPassword(), UserRole.MANAGER);
-        database.registerStore(storeId, user.getId(), "", "", date, StoreStatus.CLOSED, Images.getJPGImage("MissingImg"));
+        database.registerStore(storeId, user.getId(), "", "", date, StoreStatus.CLOSED, null);
 
         Main.setCurrentUser(new Manager(user.getId(), user.getFirstName(), user.getLastName(), user.getPhoneNumber(), user.getEmail(), user.getPassword(), user.getJoinedDate()));
         Main.getCurrentUser().setCart(user.getCart());
@@ -98,5 +106,9 @@ public final class UsersService extends Service {
 
     public static ArrayList<Address> getAddresses(UUID userId) {
         return database.getAllAddresses(userId);
+    }
+
+    public static ArrayList<User> getManagers(UUID store_id) {
+        return database.getAllStoreManagers(store_id);
     }
 }

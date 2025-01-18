@@ -76,9 +76,9 @@ public class AdminAccount extends AccountPage {
 
             totalOrdersPanel.setAlignment(GroupLayout.Alignment.LEADING);
             totalOrdersPanel.setArch(20);
-            totalOrdersPanel.setTitleLabel("Total Orders");
-            totalOrdersPanel.setDescriptionLabel("Total Orders: 1231");
-            totalOrdersPanel.setValuesLabel("Active Orders: 30");
+            totalOrdersPanel.setTitleLabel("Coming Soon");
+            totalOrdersPanel.setDescriptionLabel("Coming Soon");
+            totalOrdersPanel.setValuesLabel("Coming Soon");
         }
 
         private void setupTable() {
@@ -194,9 +194,9 @@ public class AdminAccount extends AccountPage {
 
             totalOrdersPanel.setAlignment(GroupLayout.Alignment.LEADING);
             totalOrdersPanel.setArch(20);
-            totalOrdersPanel.setTitleLabel("Orders");
-            totalOrdersPanel.setDescriptionLabel("Active Orders: 30");
-            totalOrdersPanel.setValuesLabel("Total Orders: 1231");
+            totalOrdersPanel.setTitleLabel("Coming Soon");
+            totalOrdersPanel.setDescriptionLabel("Coming Soon");
+            totalOrdersPanel.setValuesLabel("Coming Soon");
         }
 
         private void setupTable() {
@@ -307,9 +307,9 @@ public class AdminAccount extends AccountPage {
 
             totalOrdersPanel.setAlignment(GroupLayout.Alignment.LEADING);
             totalOrdersPanel.setArch(20);
-            totalOrdersPanel.setTitleLabel("Orders");
-            totalOrdersPanel.setDescriptionLabel("Active Orders: 30");
-            totalOrdersPanel.setValuesLabel("Total Orders: 1231");
+            totalOrdersPanel.setTitleLabel("Coming soon");
+            totalOrdersPanel.setDescriptionLabel("Coming soon");
+            totalOrdersPanel.setValuesLabel("Coming soon");
         }
 
         private void setupTable() {
@@ -340,7 +340,7 @@ public class AdminAccount extends AccountPage {
                     dialog.addNoButtonAction(a -> dialog.dispose());
                     dialog.addYesButtonAction(a -> {
                         dialog.dispose();
-                        StoresService.deleteStore(owner.getId());
+                        StoresService.deleteStore(store.getId());
                         switchToPanel(StoresPanel::new);
                     });
                 }});

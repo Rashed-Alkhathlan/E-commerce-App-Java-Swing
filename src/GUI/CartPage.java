@@ -102,6 +102,16 @@ public class CartPage extends Page {
             }
         });
         backButton.addActionListener(e -> MyFrame.showPage("PreviousPage"));
+        checkoutButton.addActionListener(e -> {
+            if (!Main.isSignedIn()) {
+                MyFrame.showPage("LoginPage");
+            } else if (cartProducts.isEmpty()) {
+                new PopupMessage("Cart is empty", PopupMessage.Type.WARNING);
+            } else {
+                new PopupMessage("Order Placed Successfully", PopupMessage.Type.SUCCESS);
+                MyFrame.showPage("HomePage");
+            }
+        });
     }
 
     private void setupLayout() {

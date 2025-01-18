@@ -2,6 +2,7 @@ package GUI;
 
 import Components.*;
 import Components.Button;
+import Components.Dialog;
 import Components.Panel;
 import Components.ScrollPane;
 import Components.TextField;
@@ -16,6 +17,7 @@ import Utils.Images;
 import java.awt.*;
 import java.awt.dnd.*;
 import java.awt.datatransfer.*;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.io.File;
@@ -113,14 +115,23 @@ public class ManagerAccount extends AccountPage {
             tableLabel.setHorizontalAlignment(SwingConstants.LEFT);
             tableLabel.setOpaque(false);
 
-            table.setModel(new DefaultTableModel(new Object[][]{}, new String[]{"ID", "Name", "Price", "Quantity", "Type"}) {
+            table.setModel(new DefaultTableModel(new Object[][]{}, new String[]{"ID", "Name", "Price", "Quantity", "Orders", "Action"}) {
                 public boolean isCellEditable(int rowIndex, int columnIndex) {
-                    return false;
+                    return columnIndex == 5;
                 }
             });
 
             for (Product product : ProductsService.getProducts(managerStore.getId())) {
-                table.addRow(new Object[]{product.getId(), product.getName(), product.getPrice(), product.getQuantity(), StoreStatus.OPEN});
+                table.addRow(new Object[]{product.getId(), product.getName(), product.getPrice(), product.getQuantity(), 0, (ActionListener) e -> {
+                    Dialog dialog = new Dialog("Confirmation", "<html>Are you sure you want to delete this product?</html>");
+                    dialog.setVisible(true);
+                    dialog.addNoButtonAction(a -> dialog.dispose());
+                    dialog.addYesButtonAction(a -> {
+                        dialog.dispose();
+                        ProductsService.deleteProduct(product.getId());
+                        switchToPanel(DashboardPanel::new);
+                    });
+                }});
             }
         }
 
@@ -170,6 +181,7 @@ public class ManagerAccount extends AccountPage {
         private final Panel customizePanel = new Panel();
 
         private final JPanel logoPanel = new JPanel();
+        private File storedLogoFile = null;
 
         private final Button saveButton = new Button("Save");
         private final Button editButton = new Button("Edit");
@@ -300,8 +312,8 @@ public class ManagerAccount extends AccountPage {
             managerStore.setName(storeNameField.getText());
             managerStore.setDescription(descriptionField.getText());
 
-            if ((logoPanel.getClientProperty("Logo")) != null) {
-                managerStore.setMainImageIcon((ImageIcon)((JLabel)logoPanel.getClientProperty("Logo")).getIcon());
+            if (storedLogoFile != null) {
+                managerStore.setMainImageIcon(new ImageIcon(storedLogoFile.getAbsolutePath()));
             }
 
             StoresService.updateStore(managerStore.getId(), managerStore.getName(), managerStore.getDescription(), managerStore.getStatus(), managerStore.getMainImageIcon());
@@ -320,12 +332,6 @@ public class ManagerAccount extends AccountPage {
                 descriptionField.setFocusable(false);
                 descriptionField.setBackground(new Color(235, 235, 235));
                 descriptionField.setBorder(new EmptyBorder(5, 5, 5, 5));
-                storeNameField.setText(managerStore.getName());
-                descriptionField.setText(managerStore.getDescription());
-                logoPanel.removeAll();
-                logoPanel.add(new JLabel(managerStore.getMainImageIcon()));
-                logoPanel.revalidate();
-                logoPanel.repaint();
                 editButton.setText("Edit");
             });
         }
@@ -417,6 +423,7 @@ public class ManagerAccount extends AccountPage {
                                 // Ensure the file is an image
                                 if (logoFile.getName().matches(".*\\.(png|jpg|jpeg|gif)")) {
                                     setLogo(logoFile);
+                                    storedLogoFile = logoFile;
                                 } else {
                                     JOptionPane.showMessageDialog(panel, "Please drop a valid image file.", "Invalid File", JOptionPane.ERROR_MESSAGE);
                                 }
@@ -438,7 +445,6 @@ public class ManagerAccount extends AccountPage {
                 ImageIcon logoIcon = Images.scaleImage(new ImageIcon(logoFile.getAbsolutePath()), logoPanel.getWidth(), logoPanel.getHeight());
                 JLabel logoLabel = new JLabel(logoIcon);
                 logoPanel.removeAll();
-                logoPanel.putClientProperty("Logo", logoLabel);
                 logoPanel.add(logoLabel);
                 logoPanel.revalidate();
                 logoPanel.repaint();
@@ -454,6 +460,7 @@ public class ManagerAccount extends AccountPage {
         private final Panel addPanel = new Panel();
 
         private final JPanel logoPanel = new JPanel();
+        private File storedlogoFile = null;
 
         private final Button addButton = new Button("Add");
         private final Button cancelButton = new Button("Cancel");
@@ -488,7 +495,10 @@ public class ManagerAccount extends AccountPage {
                 label.setForeground(new Color(102, 102, 102));
                 label.setFont(font);
             }
+
             productPriceLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            productPriceField.setOnlyDouble();
+            productQuantityField.setOnlyInt();
 
             enableDragAndDrop(logoPanel);
 
@@ -547,14 +557,12 @@ public class ManagerAccount extends AccountPage {
                 return;
             }
 
-            ImageIcon icon;
+            ImageIcon icon = null;
             double price = 0;
             int quantity = 0;
 
-            if ((logoPanel.getClientProperty("Logo")) != null) {
-                icon = (ImageIcon)((JLabel)logoPanel.getClientProperty("Logo")).getIcon();
-            } else {
-                icon = Images.getJPGImage("MissingImg");
+            if (storedlogoFile != null) {
+                icon = new ImageIcon(storedlogoFile.getAbsolutePath());
             }
 
             try {price = Double.parseDouble(productPriceField.getText());} catch (NumberFormatException ignored) {};
@@ -677,6 +685,7 @@ public class ManagerAccount extends AccountPage {
                                 // Ensure the file is an image
                                 if (logoFile.getName().matches(".*\\.(png|jpg|jpeg|gif)")) {
                                     setLogo(logoFile);
+                                    storedlogoFile = logoFile;
                                 } else {
                                     JOptionPane.showMessageDialog(panel, "Please drop a valid image file.", "Invalid File", JOptionPane.ERROR_MESSAGE);
                                 }
@@ -698,7 +707,6 @@ public class ManagerAccount extends AccountPage {
                 ImageIcon logoIcon = Images.scaleImage(new ImageIcon(logoFile.getAbsolutePath()), logoPanel.getWidth(), logoPanel.getHeight());
                 JLabel logoLabel = new JLabel(logoIcon);
                 logoPanel.removeAll();
-                logoPanel.putClientProperty("Logo", logoLabel);
                 logoPanel.add(logoLabel);
                 logoPanel.revalidate();
                 logoPanel.repaint();
