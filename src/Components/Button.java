@@ -7,11 +7,12 @@ import java.awt.event.MouseEvent;
 
 public class Button extends JButton {
 
-    private boolean opaque = true;
+    boolean opaque = false;
 
     private final Color hoverColor = new Color(0, 0, 0, 20);
     private boolean isHovered = false;
 
+    private Color color = Color.WHITE;
     private int arch = 20;
 
     public Button() {
@@ -67,17 +68,18 @@ public class Button extends JButton {
         setBorderPainted(opaque);
     }
 
-    public boolean isOpaque() {
-        return opaque;
+    @Override
+    public void setBackground(Color color) {
+        this.color = color;
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
 
-        if (isOpaque()) {
+        if (opaque) {
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2d.setColor(getBackground());
+            g2d.setColor(color);
             if (arch != 0) {
                 g2d.fillRoundRect(0, 0, getWidth(), getHeight(), arch, arch);
             } else {

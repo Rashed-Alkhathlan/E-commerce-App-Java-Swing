@@ -151,7 +151,7 @@ public class CartPage extends Page {
             appliedDiscountLabel.setVisible(false);
         }
 
-        totalNumLabel.setText("$" + (total - discountAmount));
+        totalNumLabel.setText("$" + String.format("%.2f", total - discountAmount));
     }
 
     private void setupCartPanelLayout() {

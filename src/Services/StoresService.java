@@ -3,7 +3,6 @@ package Services;
 import Enums.StoreStatus;
 import Objects.Manager;
 import Objects.Store;
-import Objects.User;
 import Utils.Images;
 
 import javax.swing.*;
@@ -56,11 +55,12 @@ public final class StoresService extends Service {
         database.updateStore(storeId, name, description, status, icon);
     }
 
-    public static void deleteStore(UUID ownerId) {
+    public static void deleteStore(UUID id) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
         String date = LocalDate.now().format(formatter);
+        UUID ownerId = getStoreOwner(id).getId();
 
-        database.deleteStore(ownerId);
+        database.deleteStore(id);
         database.registerStore(UUID.randomUUID(), ownerId, "", "", date, StoreStatus.CLOSED, Images.getJPGImage("MissingImg"));
 
     }

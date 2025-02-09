@@ -107,8 +107,6 @@ public class DBUtils {
         }
     }
 
-
-
     public void registerAddress(UUID id, UUID userId, String country, String city, String postalCode, String additionalInfo) {
         String query = "INSERT INTO Address (id, user_id, country, city, postal_code, additional_info) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -283,6 +281,30 @@ public class DBUtils {
         return products;
     }
 
+    public ArrayList<Address> getAllAddresses(UUID userId) {
+        String query = "SELECT * FROM Address WHERE user_id = ?";
+        ArrayList<Address> addresses = new ArrayList<>();
+
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, userId.toString());
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    UUID id = UUID.fromString(rs.getString("id"));
+                    String country = rs.getString("country");
+                    String city = rs.getString("city");
+                    String postalCode = rs.getString("postal_code");
+                    String additionalInfo = rs.getString("additional_info");
+
+                    addresses.add(new Address(id, country, city, postalCode, additionalInfo));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return addresses;
+    }
+
     public Store getStore(UUID id) {
         String query = "SELECT * FROM Stores WHERE (owner_id = ? OR id = ?)";
 
@@ -310,7 +332,6 @@ public class DBUtils {
         }
         return null;
     }
-
 
     public Product getProduct(UUID productId) {
         String query = "SELECT * FROM Products WHERE id = ?";
@@ -392,32 +413,6 @@ public class DBUtils {
 
         return managers;
     }
-
-
-    public ArrayList<Address> getAllAddresses(UUID userId) {
-        String query = "SELECT * FROM Address WHERE user_id = ?";
-        ArrayList<Address> addresses = new ArrayList<>();
-
-        try (PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, userId.toString());
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    UUID id = UUID.fromString(rs.getString("id"));
-                    String country = rs.getString("country");
-                    String city = rs.getString("city");
-                    String postalCode = rs.getString("postal_code");
-                    String additionalInfo = rs.getString("additional_info");
-
-                    addresses.add(new Address(id, country, city, postalCode, additionalInfo));
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return addresses;
-    }
-
 
     public int getAllUsersCount(UserRole role) {
         String query;
@@ -522,36 +517,6 @@ public class DBUtils {
         return cart;
     }
 
-    public void updateUser(UUID id, String firstName, String lastName, String phoneNumber, String email, String password, UserRole role) {
-        String query = "UPDATE Users SET first_name = ?, last_name = ?, phone_number = ?, email = ?, password = ?, role = ? WHERE id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, firstName);
-            stmt.setString(2, lastName);
-            stmt.setString(3, phoneNumber);
-            stmt.setString(4, email);
-            stmt.setString(5, password);
-            stmt.setString(6, role.name());
-            stmt.setString(7, id.toString());
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void updateStore(UUID id, String name, String description, StoreStatus status, ImageIcon mainImageIcon) {
-        String query = "UPDATE Stores SET name = ?, description = ?, status = ?, main_image_icon = ? WHERE id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, name);
-            stmt.setString(2, description);
-            stmt.setString(3, status.name());
-            stmt.setBytes(4, Images.imageIconToByteArray(mainImageIcon));
-            stmt.setString(5, id.toString());
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
     public void updateProduct(UUID id, String name, String description, double price, int quantity, ImageIcon image) {
         String query = "UPDATE Products SET name = ?, description = ?, price = ?, quantity = ?, main_image_icon = ? WHERE id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -581,45 +546,33 @@ public class DBUtils {
         }
     }
 
-    public void deleteUser(UUID id) {
-        String query = "DELETE FROM Users WHERE id = ?";
+    private void executeUpdate(String query, Object... params) {
         try (PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, id.toString());
+            for (int i = 0; i < params.length; i++) {
+                stmt.setObject(i + 1, params[i]);
+            }
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public void deleteStore(UUID id) {
-        String query = "DELETE FROM Stores WHERE owner_id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, id.toString());
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public void updateUser(UUID id, String firstName, String lastName, String phone, String email, String password, UserRole role) {
+        executeUpdate("UPDATE Users SET first_name=?, last_name=?, phone_number=?, email=?, password=?, role=? WHERE id=?",
+                firstName, lastName, phone, email, password, role.name(), id.toString());
     }
 
-    public void deleteProduct(UUID id) {
-        String query = "DELETE FROM Products WHERE id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, id.toString());
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public void updateStore(UUID id, String name, String desc, StoreStatus status, ImageIcon image) {
+        executeUpdate("UPDATE Stores SET name=?, description=?, status=?, main_image_icon=? WHERE id=?",
+                name, desc, status.name(), Images.imageIconToByteArray(image), id.toString());
     }
 
-    public void deleteAddress(UUID id) {
-        String query = "DELETE FROM Address WHERE id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, id.toString());
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public void deleteRecord(String table, UUID id) {
+        executeUpdate("DELETE FROM " + table + " WHERE id = ?", id.toString());
     }
 
-
+    public void deleteUser(UUID id) { deleteRecord("Users", id); }
+    public void deleteStore(UUID id) { deleteRecord("Stores", id); }
+    public void deleteProduct(UUID id) { deleteRecord("Products", id); }
+    public void deleteAddress(UUID id) { deleteRecord("Address", id); }
 }

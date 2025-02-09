@@ -685,7 +685,6 @@ public class ManagerAccount extends AccountPage {
                                 // Ensure the file is an image
                                 if (logoFile.getName().matches(".*\\.(png|jpg|jpeg|gif)")) {
                                     setLogo(logoFile);
-                                    storedlogoFile = logoFile;
                                 } else {
                                     JOptionPane.showMessageDialog(panel, "Please drop a valid image file.", "Invalid File", JOptionPane.ERROR_MESSAGE);
                                 }
@@ -704,6 +703,7 @@ public class ManagerAccount extends AccountPage {
         private void setLogo(File logoFile) {
             try {
                 // Display the logo in the panel
+                storedlogoFile = logoFile;
                 ImageIcon logoIcon = Images.scaleImage(new ImageIcon(logoFile.getAbsolutePath()), logoPanel.getWidth(), logoPanel.getHeight());
                 JLabel logoLabel = new JLabel(logoIcon);
                 logoPanel.removeAll();

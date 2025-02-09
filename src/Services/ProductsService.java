@@ -26,6 +26,10 @@ public final class ProductsService extends Service {
         return database.getAllProducts(storeId, searchTerm);
     }
 
+    public static Product getProduct(UUID productId) {
+        return database.getProduct(productId);
+    }
+
     public static int getProductCount() {
         return database.getAllProductsCount(null);
     }

@@ -3,14 +3,12 @@ package Services;
 import Enums.StoreStatus;
 import Enums.UserRole;
 import Objects.*;
-import Utils.Images;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public final class UsersService extends Service {
 

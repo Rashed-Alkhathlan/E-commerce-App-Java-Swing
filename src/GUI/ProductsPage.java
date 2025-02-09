@@ -7,6 +7,7 @@ import Objects.*;
 import Services.*;
 import Utils.Images;
 
+import javax.naming.directory.SearchControls;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -16,14 +17,13 @@ import java.util.UUID;
 public class ProductsPage extends Page {
     private final JPanel productsButtonsPanel = new JPanel();
     private final ScrollPane productsScrollPane = new ScrollPane(productsButtonsPanel);
-    private final JPanel searchPanel = new JPanel();
-    private final TextField searchField = new TextField("Search here...");
-    private final Button searchButton = new Button(Images.getImage("SearchImg"));
 
     private final Color buttonColor = Color.WHITE;
     private final Store currentStore;
     private int totalProducts;
     ArrayList<Product> products;
+
+    private String searchTerm = "";
 
     private final int productButtonWidth = 210;
     private final int productButtonHeight = 280;
@@ -36,6 +36,12 @@ public class ProductsPage extends Page {
         initPage();
     }
 
+    ProductsPage(UUID storeId, String searchTerm) {
+        currentStore = storeId != null ? StoresService.getStore(storeId) : null;
+        this.searchTerm = searchTerm;
+        initPage();
+    }
+
     @Override
     protected void initPage() {
         setupBackground();
@@ -43,7 +49,6 @@ public class ProductsPage extends Page {
         actionListener();
 
         setupProductsPanel();
-        setupSearchPanel();
     }
 
     public void actionListener() {
@@ -69,35 +74,13 @@ public class ProductsPage extends Page {
                 }
             }
         });
-        searchButton.addActionListener(e -> {
-            String searchTerm = searchField.getText().toLowerCase();
-            new SwingWorker<Void, Void>() {
-                @Override
-                protected Void doInBackground() {
-                    updateProducts(searchTerm);
-                    loadVisibleProducts(products);
-                    return null;
-                }
-            }.execute();
-        });
     }
 
     private void setupProductsPanel() {
         productsButtonsPanel.setLayout(null);
         productsButtonsPanel.setOpaque(false);
         contentPanel.add(productsScrollPane, BorderLayout.CENTER);
-        updateProducts("");
-    }
-
-    private void setupSearchPanel() {
-        searchField.setPreferredSize(new Dimension(300, 30));
-        searchButton.setPreferredSize(new Dimension(30, 30));
-        searchButton.setArch(0);
-        searchPanel.setLayout(new GridBagLayout());
-        searchPanel.setOpaque(false);
-        searchPanel.add(searchField);
-        searchPanel.add(searchButton);
-        headerPanel.add(searchPanel, BorderLayout.CENTER);
+        updateProducts(searchTerm);
     }
 
     private void updateProducts(String searchTerm) {
@@ -195,7 +178,7 @@ public class ProductsPage extends Page {
         productButton.add(imageLabel, BorderLayout.NORTH);
         productButton.add(textPanel, BorderLayout.CENTER);
 
-        productButton.addActionListener(e -> CartService.addToCart(product, 1));
+        productButton.addActionListener(e -> MyFrame.showPage("ProductPage", product.getId()));
         return productButton;
     }
 

@@ -69,6 +69,7 @@ public final class MyFrame {
         pages.put("CartPage", e -> new CartPage());
         pages.put("StoresPage", e -> new StoresPage());
         pages.put("ProductsPage", e -> new ProductsPage((UUID)e));
+        pages.put("ProductPage", e -> new ProductPage((UUID)e));
         pages.put("RegisterPage", e -> new RegisterPage());
         pages.put("LoginPage", e -> new LoginPage());
         pages.put("CheckoutPage", e -> new CheckoutPage());
@@ -77,7 +78,7 @@ public final class MyFrame {
 
     public static void showPage(String pageName) {
         if (pageName.equals("PreviousPage")) {history.pop(); pageName = history.peek();}
-       showPage(pageName, null);
+        showPage(pageName, null);
     }
 
     public static void showPage(String pageName, Object param) {
@@ -88,16 +89,14 @@ public final class MyFrame {
 
         if (!pageName.equals(history.peek())) {history.push(pageName);}
 
-        if (!loading) {
-            String finalPageName = pageName;
-            load(() -> {
-                mainPanel.removeAll();
-                mainPanel.add(pages.get(finalPageName).apply(param));
-                System.out.println(finalPageName);
-                mainPanel.revalidate();
-                mainPanel.repaint();
-            });
-        }
+        String finalPageName = pageName;
+        System.out.println(finalPageName);
+        load(() -> {
+            mainPanel.removeAll();
+            mainPanel.add(pages.get(finalPageName).apply(param));
+            mainPanel.revalidate();
+            mainPanel.repaint();
+        });
     }
 
     public static void reloadPage() {
