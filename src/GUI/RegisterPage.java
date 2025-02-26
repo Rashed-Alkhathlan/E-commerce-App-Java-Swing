@@ -49,7 +49,7 @@ public class RegisterPage extends Page {
     }
 
     protected void actionListener() {
-        switchToPageWhenPressed(backButton, "PreviousPage");
+        backButton.addActionListener(e -> MyFrame.goBack());
         registerButton.addActionListener(e -> getInput());
     }
 

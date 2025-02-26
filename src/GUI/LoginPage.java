@@ -41,8 +41,8 @@ public class LoginPage extends Page {
     }
 
     public void actionListener() {
-        switchToPageWhenPressed(backButton, "PreviousPage");
-        switchToPageWhenPressed(registerButton, "RegisterPage");
+        backButton.addActionListener(e -> MyFrame.goBack());
+        switchToPageWhenPressed(registerButton, RegisterPage.class);
         loginButton.addActionListener(e -> getInput());
     }
 

@@ -52,7 +52,7 @@ public class ProductPage extends Page {
     public ProductPage(UUID productId) {
         if (productId == null) {
             currentProduct = null;
-            MyFrame.showPage("PreviousPage");
+            MyFrame.goBack();
         } else {
             currentProduct = ProductsService.getProduct(productId);
             initPage();
@@ -71,7 +71,7 @@ public class ProductPage extends Page {
     }
 
     public void actionListener() {
-        buyButton.addActionListener(e -> MyFrame.showPage("PreviousPage"));
+        buyButton.addActionListener(e -> MyFrame.goBack());
         addToCartButton.addActionListener(e -> {
             CartService.addToCart(currentProduct, Integer.parseUnsignedInt(amountLabel.getText()));
             new PopupMessage("Added To Cart Successfully", PopupMessage.Type.SUCCESS);

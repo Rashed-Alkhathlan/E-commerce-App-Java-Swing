@@ -1,5 +1,7 @@
 package GUI;
 
+import javax.swing.*;
+
 public class ForgetPassPage extends Page {
 
     ForgetPassPage() {
@@ -8,6 +10,7 @@ public class ForgetPassPage extends Page {
 
     @Override
     protected void initPage() {
+
 
     }
 

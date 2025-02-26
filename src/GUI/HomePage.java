@@ -76,8 +76,8 @@ public class HomePage extends Page {
     }
 
     protected void actionListener() {
-        allStoresButton.addActionListener(e -> MyFrame.showPage("StoresPage"));
-        allProductsButton.addActionListener(e -> MyFrame.showPage("ProductsPage"));
-        accountButton.addActionListener(e -> {MyFrame.showPage("AccountPage");});
+        allStoresButton.addActionListener(e -> MyFrame.showPage(StoresPage.class));
+        allProductsButton.addActionListener(e -> MyFrame.showPage(ProductsPage.class));
+        accountButton.addActionListener(e -> MyFrame.showPage(AccountPage.class));
     }
 }

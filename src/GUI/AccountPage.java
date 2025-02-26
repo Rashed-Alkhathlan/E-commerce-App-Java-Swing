@@ -50,9 +50,9 @@ public class AccountPage extends Page {
     protected void setupMenu() {
         menuPanel.setExpandedStatus(true);
         menuPanel.addDivider();
-        menuPanel.addButton("Home", "HomeImg", e -> MyFrame.showPage("HomePage"));
+        menuPanel.addButton("Home", "HomeImg", e -> MyFrame.showPage(HomePage.class));
         menuPanel.addButton("User information", "ManImg", e -> switchToPanel(UserInfoPanel::new));
-        menuPanel.addButton("Orders", "ProductsImg", e -> MyFrame.showPage("HomePage"));
+        menuPanel.addButton("Orders", "ProductsImg", e -> MyFrame.showPage(HomePage.class));
         menuPanel.addButton("Addresses", "StoresImg", e -> switchToPanel(AddressesPanel::new));
         menuPanel.addButton("Log Out", "ExitImg", e -> UsersService.logout());
         menuPanel.addDivider();

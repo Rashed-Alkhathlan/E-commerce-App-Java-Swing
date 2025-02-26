@@ -4,16 +4,16 @@ import Objects.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Stack;
-import java.util.UUID;
 import java.util.function.Function;
 
 public final class MyFrame {
     private static final JFrame frame = new JFrame("ShopSphere");
     private static final JPanel mainPanel = new JPanel();
     private static JPanel loadingPanel;
-    private static final Stack<String> history = new Stack<>();
+    private static Stack<PageHistoryEntry> history = new Stack<>();
     private static boolean inAnimation = false;
     private static boolean loading = false;
 
@@ -48,13 +48,12 @@ public final class MyFrame {
 
     private void initFrame() {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLocation(GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint().x - (getWidth() / 2), GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint().y - (getHeight() / 2));
         frame.setResizable(true);
         frame.setMinimumSize(new Dimension(width, height));
 
         setupLoadingPanel();
-        loadPages();
-        history.push("StartPage");
-        showPage("StartPage");
+        showPage(StartPage.class);
 
         mainPanel.setLayout(new BorderLayout());
         frame.add(mainPanel, BorderLayout.CENTER);
@@ -63,51 +62,107 @@ public final class MyFrame {
         frame.setVisible(true);
     }
 
-    private void loadPages() {
-        pages.put("StartPage", e -> new StartPage());
-        pages.put("HomePage", e -> new HomePage());
-        pages.put("CartPage", e -> new CartPage());
-        pages.put("StoresPage", e -> new StoresPage());
-        pages.put("ProductsPage", e -> new ProductsPage((UUID)e));
-        pages.put("ProductPage", e -> new ProductPage((UUID)e));
-        pages.put("RegisterPage", e -> new RegisterPage());
-        pages.put("LoginPage", e -> new LoginPage());
-        pages.put("CheckoutPage", e -> new CheckoutPage());
-        pages.put("AccountPage", e -> new AccountPage());
-    }
+//    private void loadPages() {
+//        pages.put("StartPage", e -> new StartPage());
+//        pages.put("HomePage", e -> new HomePage());
+//        pages.put("CartPage", e -> new CartPage());
+//        pages.put("StoresPage", e -> new StoresPage());
+//        pages.put("ProductsPage", e -> new ProductsPage((UUID)e));
+//        pages.put("ProductPage", e -> new ProductPage((UUID)e));
+//        pages.put("RegisterPage", e -> new RegisterPage());
+//        pages.put("LoginPage", e -> new LoginPage());
+//        pages.put("CheckoutPage", e -> new CheckoutPage());
+//        pages.put("AccountPage", e -> new AccountPage());
+//    }
+//
+//    public static void showPage(String pageName) {
+//        if (pageName.equals("PreviousPage")) {history.pop(); pageName = history.peek();}
+//        showPage(pageName, null);
+//    }
+//
+//    public static void showPage(String pageName, Object param) {
+//        if (pageName.equals("RegisterPage") && Main.isSignedIn()) {pageName = "HomePage";}
+//        if (pageName.equals("LoginPage") && Main.isSignedIn()) {pageName = "HomePage";}
+//        if (pageName.equals("CheckoutPage") && !Main.isSignedIn()) {pageName = "LoginPage";}
+//        if (pageName.equals("AccountPage") && !Main.isSignedIn()) {pageName = "LoginPage";}
+//
+//        if (!pageName.equals(history.peek())) {history.push(pageName);}
+//
+//        String finalPageName = pageName;
+//        System.out.println(finalPageName);
+//        load(() -> {
+//            mainPanel.removeAll();
+//            mainPanel.add(pages.get(finalPageName).apply(param));
+//            mainPanel.revalidate();
+//            mainPanel.repaint();
+//        });
+//    }
 
-    public static void showPage(String pageName) {
-        if (pageName.equals("PreviousPage")) {history.pop(); pageName = history.peek();}
-        showPage(pageName, null);
-    }
-
-    public static void showPage(String pageName, Object param) {
-        if (pageName.equals("RegisterPage") && Main.isSignedIn()) {pageName = "HomePage";}
-        if (pageName.equals("LoginPage") && Main.isSignedIn()) {pageName = "HomePage";}
-        if (pageName.equals("CheckoutPage") && !Main.isSignedIn()) {pageName = "LoginPage";}
-        if (pageName.equals("AccountPage") && !Main.isSignedIn()) {pageName = "LoginPage";}
-
-        if (!pageName.equals(history.peek())) {history.push(pageName);}
-
-        String finalPageName = pageName;
-        System.out.println(finalPageName);
+    public static void showPage(Class<? extends Page> pageClass, Object... args) {
         load(() -> {
+            Page newPage = createPage(pageClass, args);
+            if (newPage == null) return;
+
+            history.push(new PageHistoryEntry(pageClass, args));
+
             mainPanel.removeAll();
-            mainPanel.add(pages.get(finalPageName).apply(param));
+            mainPanel.add(newPage);
             mainPanel.revalidate();
             mainPanel.repaint();
         });
     }
 
+    public static void goBack() {
+        if (history.size() > 1) {
+            history.pop();
+            PageHistoryEntry previousEntry = history.pop();
+            showPage(previousEntry.pageClass, previousEntry.args); // Restore previous page with args
+        }
+    }
+
     public static void reloadPage() {
-        showPage(history.peek());
+        if (!history.isEmpty()) {
+            PageHistoryEntry previousEntry = history.pop();
+            showPage(previousEntry.pageClass, previousEntry.args); // Restore previous page with args
+        }
+    }
+
+    private static Page createPage(Class<? extends Page> pageClass, Object... args) {
+        if (pageClass == AccountPage.class && !Main.isSignedIn()) pageClass = LoginPage.class;
+        if (pageClass == CheckoutPage.class && !Main.isSignedIn()) pageClass = LoginPage.class;
+        if (pageClass == RegisterPage.class && Main.isSignedIn()) pageClass = HomePage.class;
+        if (pageClass == LoginPage.class && Main.isSignedIn()) pageClass = HomePage.class;
+
+        try {
+            if (args.length == 0) {
+                return pageClass.getDeclaredConstructor().newInstance();
+            } else {
+                for (Constructor<?> constructor : pageClass.getDeclaredConstructors()) {
+                    Class<?>[] paramTypes = constructor.getParameterTypes();
+
+                    if (paramTypes.length == args.length) {
+                        boolean matches = true;
+                        for (int i = 0; i < paramTypes.length; i++) {
+                            if (!paramTypes[i].isInstance(args[i])) {
+                                matches = false;
+                                break;
+                            }
+                        }
+                        if (matches) {
+                            return (Page) constructor.newInstance(args);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static void load(Runnable backgroundTask) {
         loading = true;
         loadingPanel.setVisible(true);
-        loadingPanel.revalidate();
-        loadingPanel.repaint();
 
         new SwingWorker<Void, Void>() {
             @Override
@@ -118,7 +173,7 @@ public final class MyFrame {
 
             @Override
             protected void done() {
-                SwingUtilities.invokeLater(() -> loadingPanel.setVisible(false));
+                loadingPanel.setVisible(false);
                 loading = false;
             }
         }.execute();
@@ -165,7 +220,7 @@ public final class MyFrame {
 
             private void startAnimation() {
                 if (timer == null) {
-                    timer = new Timer(10, e -> {
+                    timer = new Timer(15, e -> {
                         angle += 10; // Increment angle
                         if (angle >= 360) {
                             angle = 0;
@@ -196,6 +251,16 @@ public final class MyFrame {
         loadingPanel.add(loadingLabel);
 
         frame.setGlassPane(loadingPanel);
+    }
+
+    private static class PageHistoryEntry {
+        Class<? extends Page> pageClass;
+        Object[] args;
+
+        PageHistoryEntry(Class<? extends Page> pageClass, Object[] args) {
+            this.pageClass = pageClass;
+            this.args = args;
+        }
     }
 
 }

@@ -3,9 +3,8 @@ package Objects;
 import GUI.MyFrame;
 import java.util.UUID;
 
+import GUI.StartPage;
 import Services.Service;
-
-import javax.swing.*;
 
 public class Main {
     private static boolean isSignedIn = false;
@@ -19,7 +18,7 @@ public class Main {
             currentUser = new Customer(UUID.randomUUID(),"", "", "", "", "", "");
             currentUser.setCart(new Cart());
             isSignedIn = false;
-            MyFrame.showPage("StartPage");
+            MyFrame.showPage(StartPage.class);
         } else {
             currentUser = user;
             isSignedIn = true;

@@ -17,9 +17,6 @@ import java.util.ArrayList;
 public class StoresPage extends Page {
     private final JPanel storesButtonsPanel = new JPanel();
     private final ScrollPane storesScrollPane = new ScrollPane(storesButtonsPanel);
-    private final JPanel searchPanel = new JPanel();
-    private final TextField searchField = new TextField("Search here...");
-    private final Button searchButton = new Button(Images.getImage("SearchImg"));
 
     private final Color buttonColor = Color.WHITE;
     private int totalStores;
@@ -27,6 +24,8 @@ public class StoresPage extends Page {
 
     private final int storeButtonWidth = 300;
     private final int storeButtonHeight = 300;
+
+    private String searchTerm = "";
 
     private final int iconWidth = 300;
     private final int iconHeight = 250;
@@ -36,14 +35,20 @@ public class StoresPage extends Page {
         initPage();
     }
 
+    StoresPage(String searchTerm) {
+        this.searchTerm = searchTerm;
+        initPage();
+    }
+
     @Override
     protected void initPage() {
         setupBackground();
         setupMenu();
         actionListener();
 
+        searchField.setText(searchTerm);
+
         setupStoresPanel();
-        setupSearchPanel();
     }
 
     public void actionListener() {
@@ -69,35 +74,13 @@ public class StoresPage extends Page {
                 }
             }
         });
-        searchButton.addActionListener(e -> {
-            String searchTerm = searchField.getText().toLowerCase();
-            new SwingWorker<Void, Void>() {
-                @Override
-                protected Void doInBackground() {
-                    updateStoresPanel(searchTerm);
-                    loadVisibleStores();
-                    return null;
-                }
-            }.execute();
-        });
     }
 
     private void setupStoresPanel() {
         storesButtonsPanel.setLayout(null);
         storesButtonsPanel.setOpaque(false);
         contentPanel.add(storesScrollPane, BorderLayout.CENTER);
-        updateStoresPanel("");
-    }
-
-    private void setupSearchPanel() {
-        searchField.setPreferredSize(new Dimension(300, 30));
-        searchButton.setPreferredSize(new Dimension(30, 30));
-        searchButton.setArch(0);
-        searchPanel.setLayout(new GridBagLayout());
-        searchPanel.setOpaque(false);
-        searchPanel.add(searchField);
-        searchPanel.add(searchButton);
-        headerPanel.add(searchPanel, BorderLayout.CENTER);
+        updateStoresPanel(searchTerm);
     }
 
     private void updateStoresPanel(String searchTerm) {
@@ -185,7 +168,7 @@ public class StoresPage extends Page {
         storeButton.add(imageLabel, BorderLayout.NORTH);
         storeButton.add(textPanel, BorderLayout.CENTER);
 
-        storeButton.addActionListener(e -> MyFrame.showPage("ProductsPage", store.getId()));
+        storeButton.addActionListener(e -> MyFrame.showPage(ProductsPage.class, store.getId()));
         return storeButton;
     }
 

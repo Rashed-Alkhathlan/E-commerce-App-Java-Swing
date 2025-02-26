@@ -9,6 +9,7 @@ import Utils.Images;
 
 import javax.naming.directory.SearchControls;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
@@ -31,15 +32,30 @@ public class ProductsPage extends Page {
     private final int iconWidth = 210;
     private final int iconHeight = 210;
 
+    ProductsPage() {
+        currentStore = null;
+        initPage();
+    }
+
+    ProductsPage(String searchTerm) {
+        currentStore = null;
+        this.searchTerm = searchTerm;
+        initPage();
+    }
+
     ProductsPage(UUID storeId) {
-        currentStore = storeId != null ? StoresService.getStore(storeId) : null;
+        currentStore = StoresService.getStore(storeId);
         initPage();
     }
 
     ProductsPage(UUID storeId, String searchTerm) {
-        currentStore = storeId != null ? StoresService.getStore(storeId) : null;
+        currentStore = StoresService.getStore(storeId);
         this.searchTerm = searchTerm;
         initPage();
+    }
+
+    protected UUID getCurrentStore() {
+        return currentStore == null ? null : currentStore.getId();
     }
 
     @Override
@@ -47,6 +63,8 @@ public class ProductsPage extends Page {
         setupBackground();
         setupMenu();
         actionListener();
+
+        searchField.setText(searchTerm);
 
         setupProductsPanel();
     }
@@ -59,6 +77,7 @@ public class ProductsPage extends Page {
                 return null;
             }
         }.execute());
+
         productsScrollPane.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
@@ -68,6 +87,8 @@ public class ProductsPage extends Page {
                         protected Void doInBackground() {
                             productsButtonsPanel.removeAll();
                             loadVisibleProducts(products);
+                            productsButtonsPanel.revalidate();
+                            productsButtonsPanel.repaint();
                             return null;
                         }
                     }.execute();
@@ -111,47 +132,46 @@ public class ProductsPage extends Page {
         int firstVisibleRow = Math.max(0, visibleRect.y / (productButtonHeight + verticalGap));
         int lastVisibleRow = Math.max(0, (visibleRect.y + visibleRect.height) / (productButtonHeight + verticalGap) + 2);
 
-        if (firstVisibleRow > 0) {firstVisibleRow-= 2;}
+        if (firstVisibleRow > 2) {firstVisibleRow -= 2;}
 
         // Calculate product indices for visible rows
         int startIndex = firstVisibleRow * productsPerRow;
-        int endIndex = Math.min((lastVisibleRow + 1) * productsPerRow, totalProducts);
+        int endIndex = Math.min(lastVisibleRow * productsPerRow, totalProducts);
 
         // Clear buttons outside the visible area
         for (Component component : productsButtonsPanel.getComponents()) {
             if (component instanceof JButton button) {
                 int buttonIndex = (int) button.getClientProperty("index");
-                if (buttonIndex < startIndex || buttonIndex >= endIndex) {
-                    productsButtonsPanel.remove(button); // Remove buttons outside the visible area
+                if ((buttonIndex < startIndex || buttonIndex > endIndex) && button.isVisible()) {
+                    button.setVisible(false); // Remove buttons outside the visible area
+                    //System.out.println(buttonIndex);
                 }
             }
         }
 
         // Add buttons in visible area
         for (int i = startIndex; i < endIndex; i++) {
-            if (!isButtonVisible(i)) {
+            if (!isButtonExist(i)) {
                 JButton productButton = getProductButton(products.get(i));
                 productButton.putClientProperty("index", i);
 
                 int row = i / productsPerRow;
-                int col = i % productsPerRow;
+                int col = (i + 5) % productsPerRow;
                 int x = (col * (productButtonWidth + horizontalGap)) + ((panelWidth - (productsPerRow * (productButtonWidth + horizontalGap))) / 2);
                 int y = row * (productButtonHeight + verticalGap);
 
-                productButton.setBounds(x, y, productButtonWidth, productButtonHeight);
+                productButton.setBounds(x, y + 20, productButtonWidth, productButtonHeight);
                 productsButtonsPanel.add(productButton);
             }
         }
-
-        productsButtonsPanel.revalidate();
-        productsButtonsPanel.repaint();
     }
 
-    private boolean isButtonVisible(int index) {
+    private boolean isButtonExist(int index) {
         for (Component component : productsButtonsPanel.getComponents()) {
             if (component instanceof JButton button) {
-                Integer buttonIndex = (Integer) button.getClientProperty("index");
-                if (buttonIndex != null && buttonIndex == index) {
+                int buttonIndex = (int) button.getClientProperty("index");
+                if (buttonIndex == index) {
+                    button.setVisible(true);
                     return true;
                 }
             }
@@ -161,31 +181,40 @@ public class ProductsPage extends Page {
 
     //Buttons for Products
     private JButton getProductButton(Product product) {
-        JButton productButton = new JButton();
-        productButton.setContentAreaFilled(false);
+        Button productButton = new Button();
+        productButton.setArch(10);
+        productButton.setOpaque(true);
+        productButton.setBackground(buttonColor);
         productButton.setPreferredSize(new Dimension(productButtonWidth, productButtonHeight));
         productButton.setLayout(new BorderLayout());
-        productButton.setMargin(new Insets(0, 0, 0, 0));
+        productButton.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-        JLabel imageLabel;
-        if (product.getMainImageIcon() != null) {
-            imageLabel = new JLabel(Images.scaleImage(product.getMainImageIcon(), iconWidth, iconHeight));
-        } else {
-            imageLabel = new JLabel(Images.getImage("MissingImg", iconWidth, iconHeight));
-        }
+        JLabel imageLabel = new JLabel();
+        new SwingWorker<>() {
+            @Override
+            protected Void doInBackground() {
+                Icon icon = (product.getMainImageIcon() != null)
+                        ? Images.scaleImage(product.getMainImageIcon(), iconWidth, iconHeight)
+                        : Images.getImage("MissingImg", iconWidth, iconHeight);
+                imageLabel.setIcon(icon);
+                return null;
+            }
+        }.execute();
         JPanel textPanel = getProductButtonPanel(product);
 
         productButton.add(imageLabel, BorderLayout.NORTH);
         productButton.add(textPanel, BorderLayout.CENTER);
 
-        productButton.addActionListener(e -> MyFrame.showPage("ProductPage", product.getId()));
+        productButton.addActionListener(e -> MyFrame.showPage(ProductPage.class, product.getId()));
+
         return productButton;
     }
 
     private JPanel getProductButtonPanel(Product product) {
         JPanel textPanel = new JPanel();
         textPanel.setLayout(new BorderLayout());
-        textPanel.setBackground(buttonColor);
+        //textPanel.setBackground(buttonColor);
+        textPanel.setOpaque(false);
         textPanel.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 3));
 
         JLabel nameLabel = new JLabel(product.getName());

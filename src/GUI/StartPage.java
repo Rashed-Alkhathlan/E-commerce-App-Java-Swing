@@ -31,9 +31,9 @@ public class StartPage extends Page {
     }
 
     public void actionListener() {
-        loginButton.addActionListener(e -> MyFrame.showPage("LoginPage"));
-        registerButton.addActionListener(e -> MyFrame.showPage("RegisterPage"));
-        guestButton.addActionListener(e -> MyFrame.showPage("HomePage"));
+        loginButton.addActionListener(e -> MyFrame.showPage(LoginPage.class));
+        registerButton.addActionListener(e -> MyFrame.showPage(RegisterPage.class));
+        guestButton.addActionListener(e -> MyFrame.showPage(HomePage.class));
     }
 
     private void setupLoginPanel() {

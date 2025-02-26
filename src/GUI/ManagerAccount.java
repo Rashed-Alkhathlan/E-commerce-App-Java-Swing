@@ -94,10 +94,14 @@ public class ManagerAccount extends AccountPage {
             storeStatusPanel.setValuesLabel("Click to Open");
 
             openStoreButton.addActionListener(e -> {
-                StoreStatus status = managerStore.getStatus() == StoreStatus.CLOSED ? StoreStatus.OPEN : StoreStatus.CLOSED;
-                StoresService.updateStore(managerStore.getId(), managerStore.getName(), managerStore.getDescription(), status, managerStore.getMainImageIcon());
-                managerStore.setStatus(status);
-                switchToPanel(DashboardPanel::new);
+                if (!managerStore.getName().isEmpty()) {
+                    StoreStatus status = managerStore.getStatus() == StoreStatus.CLOSED ? StoreStatus.OPEN : StoreStatus.CLOSED;
+                    StoresService.updateStore(managerStore.getId(), managerStore.getName(), managerStore.getDescription(), status, managerStore.getMainImageIcon());
+                    managerStore.setStatus(status);
+                    switchToPanel(DashboardPanel::new);
+                } else {
+                    new PopupMessage("Name your Store before opening", PopupMessage.Type.ERROR);
+                }
             });
         }
 
@@ -305,7 +309,8 @@ public class ManagerAccount extends AccountPage {
 
         private void getInput() {
 
-            if (storeNameField.getText().isEmpty() || descriptionField.getText().isEmpty()) {
+            if (storeNameField.getText().isEmpty()) {
+                new PopupMessage("Name field must be filled", PopupMessage.Type.ERROR);
                 return;
             }
 

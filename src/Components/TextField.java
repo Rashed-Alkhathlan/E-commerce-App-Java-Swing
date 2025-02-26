@@ -7,7 +7,6 @@ import java.util.Objects;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
@@ -18,6 +17,8 @@ import javax.swing.text.DocumentFilter;
 public class TextField extends JTextField {
 
     private String hint = "";
+
+    private int arch = 10;
 
     private boolean capitalizeFirstLetter = true;
     private boolean firstChange = true;
@@ -34,9 +35,12 @@ public class TextField extends JTextField {
     }
 
     private void initTextField() {
-        setBorder(BorderFactory.createCompoundBorder(new LineBorder(new Color(175, 175, 175), 1), new EmptyBorder(5, 5, 5, 5)));
+        //setBorder(BorderFactory.createCompoundBorder(new LineBorder(new Color(175, 175, 175), 1), new EmptyBorder(5, 5, 5, 5)));
+        setBorder(null);
+        setOpaque(false);
         setFont(new Font("SansSerif", Font.PLAIN, 13));
         setSelectionColor(new Color(220, 204, 182));
+
         getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
@@ -64,7 +68,7 @@ public class TextField extends JTextField {
 
     @Override
     public void setBorder(Border border) {
-        super.setBorder(Objects.requireNonNullElseGet(border, () -> new EmptyBorder(5, 5, 5, 5)));
+        super.setBorder(Objects.requireNonNullElseGet(border, () -> new EmptyBorder(5, 7, 5, 5)));
     }
 
     public void capitalizeFirstLetter(boolean capitalizeFirstLetter) {
@@ -87,17 +91,34 @@ public class TextField extends JTextField {
     }
 
     @Override
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        Graphics2D g2d = (Graphics2D) g;
+    protected void paintComponent(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        if (getText().isEmpty()) {
-            g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            int m = 0xfefefefe;
-            int blendedColor = ((getBackground().getRGB() & m) >>> 1) + ((getForeground().getRGB() & m) >>> 1);
-            g2d.setColor(new Color(blendedColor, true));
-            g2d.drawString(hint, getInsets().left, ((getHeight() / 2) + (g2d.getFontMetrics().getAscent() / 2) - 2));
+        // Draw rounded background
+        g2.setColor(getBackground());
+        g2.fillRoundRect(0, 0, getWidth(), getHeight(), arch, arch);
+
+        // Call super to draw text field content
+        super.paintComponent(g);
+
+        // Draw hint if the field is empty
+        if (getText().isEmpty() && hint != null) {
+            g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            g2.setColor(Color.GRAY); // Hint color
+            g2.drawString(hint, getInsets().left, (getHeight() / 2) + (g2.getFontMetrics().getAscent() / 2) - 2);
         }
+
+        g2.dispose();
+    }
+
+    @Override
+    protected void paintBorder(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setColor(new Color(175, 175, 175)); // Border color
+        g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, arch, arch);
+        g2.dispose();
     }
 
     private static class DoubleDocumentFilter extends DocumentFilter {

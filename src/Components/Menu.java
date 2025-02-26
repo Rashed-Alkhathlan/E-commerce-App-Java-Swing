@@ -37,7 +37,7 @@ public class Menu extends Panel {
         slideTimer = new Timer(10, e -> sliding());
 
         extendedLogoLabel.setBounds(15, 10, 215, 75);
-        collapsedLogoLabel.setBounds(0, 25, 50, 50);
+        collapsedLogoLabel.setBounds(0, 20, 50, 50);
 
         extendedLogoLabel.setVisible(false);
         add(extendedLogoLabel);
@@ -75,7 +75,7 @@ public class Menu extends Panel {
             extendedLogoLabel.setVisible(true);
             collapsedLogoLabel.setVisible(false);
             for (JSeparator divider : dividers) {
-                divider.setBounds(15, divider.getY(), extendedWidth - 30, divider.getHeight());
+                divider.setBounds(10, divider.getY(), extendedWidth - 30, divider.getHeight());
             }
             for (Map.Entry<JLabel, JLabel> label : labels.entrySet()) {
                 label.getKey().setVisible(true);
