@@ -7,7 +7,8 @@ import java.awt.event.MouseEvent;
 
 public class Button extends JButton {
 
-    boolean opaque = false;
+    private boolean opaque = false;
+    private boolean hoverable = true;
 
     private final Color hoverColor = new Color(0, 0, 0, 20);
     private boolean isHovered = false;
@@ -68,6 +69,10 @@ public class Button extends JButton {
         setBorderPainted(opaque);
     }
 
+    public void setHoverable(boolean hoverable) {
+        this.hoverable = hoverable;
+    }
+
     @Override
     public void setBackground(Color color) {
         this.color = color;
@@ -112,7 +117,7 @@ public class Button extends JButton {
         super.paintChildren(g);
 
         Graphics2D g2d = (Graphics2D) g;
-        if (isHovered) {
+        if (isHovered && hoverable) {
             g2d.setColor(hoverColor);
             if (arch != 0) {
                 g2d.fillRoundRect(0, 0, getWidth(), getHeight(), arch, arch);

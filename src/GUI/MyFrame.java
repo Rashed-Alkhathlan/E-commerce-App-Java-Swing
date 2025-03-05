@@ -15,9 +15,6 @@ public final class MyFrame {
     private static JPanel loadingPanel;
     private static Stack<PageHistoryEntry> history = new Stack<>();
     private static boolean inAnimation = false;
-    private static boolean loading = false;
-
-    private static final HashMap<String, Function<Object, JPanel>> pages = new HashMap<>();
 
     private static final int width = 1300;
     private static final int height = 800;
@@ -61,42 +58,6 @@ public final class MyFrame {
         frame.pack();
         frame.setVisible(true);
     }
-
-//    private void loadPages() {
-//        pages.put("StartPage", e -> new StartPage());
-//        pages.put("HomePage", e -> new HomePage());
-//        pages.put("CartPage", e -> new CartPage());
-//        pages.put("StoresPage", e -> new StoresPage());
-//        pages.put("ProductsPage", e -> new ProductsPage((UUID)e));
-//        pages.put("ProductPage", e -> new ProductPage((UUID)e));
-//        pages.put("RegisterPage", e -> new RegisterPage());
-//        pages.put("LoginPage", e -> new LoginPage());
-//        pages.put("CheckoutPage", e -> new CheckoutPage());
-//        pages.put("AccountPage", e -> new AccountPage());
-//    }
-//
-//    public static void showPage(String pageName) {
-//        if (pageName.equals("PreviousPage")) {history.pop(); pageName = history.peek();}
-//        showPage(pageName, null);
-//    }
-//
-//    public static void showPage(String pageName, Object param) {
-//        if (pageName.equals("RegisterPage") && Main.isSignedIn()) {pageName = "HomePage";}
-//        if (pageName.equals("LoginPage") && Main.isSignedIn()) {pageName = "HomePage";}
-//        if (pageName.equals("CheckoutPage") && !Main.isSignedIn()) {pageName = "LoginPage";}
-//        if (pageName.equals("AccountPage") && !Main.isSignedIn()) {pageName = "LoginPage";}
-//
-//        if (!pageName.equals(history.peek())) {history.push(pageName);}
-//
-//        String finalPageName = pageName;
-//        System.out.println(finalPageName);
-//        load(() -> {
-//            mainPanel.removeAll();
-//            mainPanel.add(pages.get(finalPageName).apply(param));
-//            mainPanel.revalidate();
-//            mainPanel.repaint();
-//        });
-//    }
 
     public static void showPage(Class<? extends Page> pageClass, Object... args) {
         load(() -> {
@@ -161,7 +122,6 @@ public final class MyFrame {
     }
 
     public static void load(Runnable backgroundTask) {
-        loading = true;
         loadingPanel.setVisible(true);
 
         new SwingWorker<Void, Void>() {
@@ -174,7 +134,6 @@ public final class MyFrame {
             @Override
             protected void done() {
                 loadingPanel.setVisible(false);
-                loading = false;
             }
         }.execute();
     }

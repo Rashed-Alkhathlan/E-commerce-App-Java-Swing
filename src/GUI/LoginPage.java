@@ -1,13 +1,15 @@
 package GUI;
 
+import Components.*;
 import Components.Button;
 import Components.Panel;
-import Components.PopupMessage;
 import Components.TextField;
 import Services.UsersService;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class LoginPage extends Page {
 
@@ -19,7 +21,7 @@ public class LoginPage extends Page {
     private final JLabel phoneOrEmailLabel = new JLabel("Phone number or email:");
     private final JLabel passwordLabel = new JLabel("Password:");
     private final TextField phoneOrEmailField = new TextField("Enter phone number or email");
-    private final TextField passwordField = new TextField("Enter password");
+    private final PasswordField passwordField = new PasswordField("Enter password");
     private final JLabel warningLabel = new JLabel("", JLabel.CENTER);
     private final JLabel titleLabel = new JLabel("Login");
 
@@ -129,11 +131,11 @@ public class LoginPage extends Page {
     }
 
     private void getInput() {
-        if (phoneOrEmailField.getText().isEmpty() || passwordField.getText().isEmpty()) {
+        if (phoneOrEmailField.getText().isEmpty() || new String(passwordField.getPassword()).isEmpty()) {
             updateWarningLabel("Please fill mandatory fields");
         } else if (!phoneOrEmailField.getText().matches(PHONE_REGEX) && !phoneOrEmailField.getText().matches(EMAIL_REGEX)) {
             updateWarningLabel("Please enter a valid phone number / email");
-        } else if (UsersService.login(phoneOrEmailField.getText(), passwordField.getText())) {
+        } else if (UsersService.login(phoneOrEmailField.getText(), new String(passwordField.getPassword()))) {
             warningLabel.setForeground(Color.GRAY);
             updateWarningLabel("Logged in successfully. Redirecting...");
             new PopupMessage("Logged in Successfully", PopupMessage.Type.SUCCESS);

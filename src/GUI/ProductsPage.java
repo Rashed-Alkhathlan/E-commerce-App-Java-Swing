@@ -156,7 +156,7 @@ public class ProductsPage extends Page {
                 productButton.putClientProperty("index", i);
 
                 int row = i / productsPerRow;
-                int col = (i + 5) % productsPerRow;
+                int col = (i + productsPerRow) % productsPerRow;
                 int x = (col * (productButtonWidth + horizontalGap)) + ((panelWidth - (productsPerRow * (productButtonWidth + horizontalGap))) / 2);
                 int y = row * (productButtonHeight + verticalGap);
 

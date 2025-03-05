@@ -36,7 +36,11 @@ public final class StoresService extends Service {
     }
 
     public static int getStoresCount() {
-        return database.getAllStoresCount(null);
+        try {
+            return database.getAllStoresCount(null);
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     public static int getStoresCount(StoreStatus status) {

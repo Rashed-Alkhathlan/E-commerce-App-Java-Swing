@@ -1,8 +1,8 @@
 package GUI;
 
+import Components.*;
 import Components.Button;
 import Components.Panel;
-import Components.PopupMessage;
 import Components.TextField;
 import Services.UsersService;
 
@@ -19,8 +19,8 @@ public class RegisterPage extends Page {
     private final TextField lastNameField = new TextField("Enter last name");
     private final TextField phoneNumberField = new TextField("Enter phone number");
     private final TextField emailField = new TextField("(optional) Enter email");
-    private final TextField passwordField = new TextField("Enter password");
-    private final TextField confirmPasswordField = new TextField("Confirm password");
+    private final PasswordField passwordField = new PasswordField("Enter password");
+    private final PasswordField confirmPasswordField = new PasswordField("Confirm password");
     private final JLabel firstNameLabel = new JLabel("First Name:*");
     private final JLabel lastNameLabel = new JLabel("Last Name:*");
     private final JLabel phoneNumberLabel = new JLabel("Phone Number:*");
@@ -161,18 +161,18 @@ public class RegisterPage extends Page {
     }
 
     private void getInput() {
-        if (firstNameField.getText().isEmpty() || lastNameField.getText().isEmpty() || phoneNumberField.getText().isEmpty() || passwordField.getText().isEmpty()) {
+        if (firstNameField.getText().isEmpty() || lastNameField.getText().isEmpty() || phoneNumberField.getText().isEmpty() || new String(passwordField.getPassword()).isEmpty()) {
             updateWarningLabel("Please fill mandatory fields.");
         } else if (!phoneNumberField.getText().matches(PHONE_REGEX)) {
             updateWarningLabel("Please enter a valid phone number.");
         } else if (!emailField.getText().isEmpty() && !emailField.getText().matches(EMAIL_REGEX)) {
             updateWarningLabel("Please enter a valid email address.");
-        } else if (!passwordField.getText().matches(PASSWORD_REGEX)){
+        } else if (!new String(passwordField.getPassword()).matches(PASSWORD_REGEX)){
             updateWarningLabel("Please enter a valid password.");
-        } else if (!passwordField.getText().equals(confirmPasswordField.getText())) {
+        } else if (!new String(passwordField.getPassword()).equals(new String(confirmPasswordField.getPassword()))) {
             updateWarningLabel("Password not the same.");
         } else {
-             int response = UsersService.register(firstNameField.getText(), lastNameField.getText(), phoneNumberField.getText(), emailField.getText(), passwordField.getText());
+             int response = UsersService.register(firstNameField.getText(), lastNameField.getText(), phoneNumberField.getText(), emailField.getText(), new String(passwordField.getPassword()));
             if (response == -1) {
                 updateWarningLabel("Phone number already in use.");
             } else if (response == 1) {

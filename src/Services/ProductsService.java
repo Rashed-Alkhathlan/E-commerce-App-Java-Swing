@@ -31,7 +31,11 @@ public final class ProductsService extends Service {
     }
 
     public static int getProductCount() {
-        return database.getAllProductsCount(null);
+        try {
+            return database.getAllProductsCount(null);
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     public static int getProductCount(UUID storeId) {
