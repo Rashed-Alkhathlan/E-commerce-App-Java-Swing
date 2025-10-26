@@ -12,6 +12,7 @@ import Objects.Product;
 import Objects.Store;
 import Services.ProductsService;
 import Services.StoresService;
+import Services.UsersService;
 import Utils.Images;
 
 import java.awt.*;
@@ -46,12 +47,15 @@ public class ManagerAccount extends AccountPage {
 
     private void addManagerMenu() {
         menuPanel.addLabel("Manager Settings:", "SettingsImg");
-        menuPanel.addButton("Dashboard", "DashImg", e -> switchToPanel(DashboardPanel::new));
-        menuPanel.addButton("Customize store", "StoresImg", e -> switchToPanel(CustomizeStorePanel::new));
-        menuPanel.addButton("Add products", "ProductsImg", e -> switchToPanel(addProductsPanel::new));
+        menuPanel.addButton("Dashboard", "DashImg", e -> switchToPanel(DashboardPanel.class));
+        menuPanel.addButton("Customize store", "StoresImg", e -> switchToPanel(CustomizeStorePanel.class));
+        menuPanel.addButton("Add products", "ProductsImg", e -> switchToPanel(addProductsPanel.class));
+        menuPanel.addDivider();
+        menuPanel.addButton("Log Out", "ExitImg", e -> UsersService.logout());
+        menuPanel.addDivider();
     }
 
-    private class DashboardPanel extends Panel {
+    private class DashboardPanel extends JPanel {
 
         private final Table table = new Table();
         private final ScrollPane tableScrollPane = new ScrollPane(table);
@@ -77,8 +81,13 @@ public class ManagerAccount extends AccountPage {
             totalProductsPanel.setAlignment(GroupLayout.Alignment.LEADING);
             totalProductsPanel.setArch(20);
             totalProductsPanel.setTitleLabel("Products");
-            totalProductsPanel.setDescriptionLabel("Total: " + ProductsService.getProductCount(managerStore.getId()));
-            totalProductsPanel.setValuesLabel("Stock: ");
+            totalProductsPanel.setDescriptionLabel("Total: " + ProductsService.getProductsCount(managerStore.getId()));
+
+            int stock = 0;
+            for (Product product : ProductsService.getProducts("", managerStore.getId(), null)) {
+                stock += product.getQuantity();
+            }
+            totalProductsPanel.setValuesLabel("Stock: " + stock);
 
             totalOrdersPanel.setAlignment(GroupLayout.Alignment.LEADING);
             totalOrdersPanel.setArch(20);
@@ -98,7 +107,7 @@ public class ManagerAccount extends AccountPage {
                     StoreStatus status = managerStore.getStatus() == StoreStatus.CLOSED ? StoreStatus.OPEN : StoreStatus.CLOSED;
                     StoresService.updateStore(managerStore.getId(), managerStore.getName(), managerStore.getDescription(), status, managerStore.getMainImageIcon());
                     managerStore.setStatus(status);
-                    switchToPanel(DashboardPanel::new);
+                    switchToPanel(DashboardPanel.class);
                 } else {
                     new PopupMessage("Name your Store before opening", PopupMessage.Type.ERROR);
                 }
@@ -113,7 +122,7 @@ public class ManagerAccount extends AccountPage {
             tablePanel.add(tableLabel, BorderLayout.NORTH);
             tablePanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-            tableLabel.setFont(new Font("SanSerif", Font.BOLD, 20));
+            tableLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.BOLD, 20));
             tableLabel.setForeground(new Color(102, 102, 102));
             tableLabel.setBorder(new EmptyBorder(5, 5, 5, 5));
             tableLabel.setHorizontalAlignment(SwingConstants.LEFT);
@@ -125,7 +134,7 @@ public class ManagerAccount extends AccountPage {
                 }
             });
 
-            for (Product product : ProductsService.getProducts(managerStore.getId())) {
+            for (Product product : ProductsService.getProducts("", managerStore.getId(), null)) {
                 table.addRow(new Object[]{product.getId(), product.getName(), product.getPrice(), product.getQuantity(), 0, (ActionListener) e -> {
                     Dialog dialog = new Dialog("Confirmation", "<html>Are you sure you want to delete this product?</html>");
                     dialog.setVisible(true);
@@ -133,7 +142,7 @@ public class ManagerAccount extends AccountPage {
                     dialog.addYesButtonAction(a -> {
                         dialog.dispose();
                         ProductsService.deleteProduct(product.getId());
-                        switchToPanel(DashboardPanel::new);
+                        switchToPanel(DashboardPanel.class);
                     });
                 }});
             }
@@ -210,7 +219,7 @@ public class ManagerAccount extends AccountPage {
             customizePanel.setArch(20);
             customizePanel.setBackground(Color.WHITE);
 
-            Font font = new Font("SanSerif", Font.PLAIN, 14);
+            Font font = new Font(UIManager.getFont("Label.font").getFontName(), Font.PLAIN, 14);
             for (JLabel label : new JLabel[]{storeNameLabel, descriptionLabel}) {
                 label.setOpaque(false);
                 label.setForeground(new Color(102, 102, 102));
@@ -220,7 +229,7 @@ public class ManagerAccount extends AccountPage {
             enableDragAndDrop(logoPanel);
 
             titleLabel.setOpaque(false);
-            titleLabel.setFont(new Font("SansSerif", Font.BOLD, 24));
+            titleLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.BOLD, 24));
 
             storeNameField.setText(managerStore.getName());
             descriptionField.setText(managerStore.getDescription());
@@ -238,7 +247,7 @@ public class ManagerAccount extends AccountPage {
             }
 
             final boolean[] firstChange = {true};
-            descriptionField.setFont(new Font("SansSerif", Font.PLAIN, 13));
+            descriptionField.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.PLAIN, 13));
             descriptionField.setSelectionColor(new Color(220, 204, 182));
             descriptionField.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -270,7 +279,7 @@ public class ManagerAccount extends AccountPage {
 
             saveButton.addActionListener(e -> getInput());
             editButton.addActionListener(e -> {
-                if (editButton.getText().equals("Edit")) {
+                if (editButton.getRawText().equals("Edit")) {
                     if (dropTarget != null) {
                         dropTarget.setActive(true);
                     }
@@ -494,7 +503,7 @@ public class ManagerAccount extends AccountPage {
             addPanel.setArch(20);
             addPanel.setBackground(Color.WHITE);
 
-            Font font = new Font("SanSerif", Font.PLAIN, 14);
+            Font font = new Font(UIManager.getFont("Label.font").getFontName(), Font.PLAIN, 14);
             for (JLabel label : new JLabel[]{productNameLabel, descriptionLabel, productPriceLabel, productQuantityLabel}) {
                 label.setOpaque(false);
                 label.setForeground(new Color(102, 102, 102));
@@ -508,11 +517,11 @@ public class ManagerAccount extends AccountPage {
             enableDragAndDrop(logoPanel);
 
             titleLabel.setOpaque(false);
-            titleLabel.setFont(new Font("SansSerif", Font.BOLD, 24));
+            titleLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.BOLD, 24));
 
             final boolean[] firstChange = {true};
             descriptionField.setBorder(BorderFactory.createCompoundBorder(new LineBorder(Color.LIGHT_GRAY), new EmptyBorder(5, 5, 5, 5)));
-            descriptionField.setFont(new Font("SansSerif", Font.PLAIN, 13));
+            descriptionField.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.PLAIN, 13));
             descriptionField.setSelectionColor(new Color(220, 204, 182));
             descriptionField.getDocument().addDocumentListener(new DocumentListener() {
 

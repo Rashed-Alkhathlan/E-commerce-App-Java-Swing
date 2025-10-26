@@ -9,6 +9,9 @@ import java.awt.*;
 
 public class PopupMessage extends Panel {
 
+    private static int popupNumber = 0;
+    private int popupNum = popupNumber;
+
     public enum Type {
         ERROR, WARNING, SUCCESS
     }
@@ -17,22 +20,28 @@ public class PopupMessage extends Panel {
     int height = 40;
 
     public PopupMessage(String message, Type type) {
+        popupNumber++;
         setLayout(new BorderLayout(5, 0));
         setArch(10);
         setBorderPainted(true);
         setBorder(new EmptyBorder(5, 5, 5, 5));
 
         // Message Label
-        JLabel messageLabel = new JLabel(message, SwingConstants.LEFT);
-        messageLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
+        JLabel messageLabel = new JLabel("<html>" + message + "</html>", SwingConstants.LEFT);
+        messageLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.BOLD, 14));
         messageLabel.setOpaque(false);
 
         JLabel icon;
-        if (type == Type.WARNING || type == Type.ERROR) {
+        if (type == Type.ERROR) {
             setBackground(new Color(255, 182, 193));
             setBorderColor(new Color(255, 0 , 0));
             icon = new JLabel(Images.getImage("ErrorImg", 25, 25));
             messageLabel.setForeground(new Color(150, 0, 0));
+        } else if (type == Type.WARNING) {
+            setBackground(new Color(173, 216, 230));
+            setBorderColor(new Color(0, 100, 139));
+            icon = new JLabel(Images.getImage("InfoImg", 25, 25));
+            messageLabel.setForeground(new Color(0, 0, 150));
         } else {
             setBackground( new Color(230, 255, 230));
             setBorderColor(new Color(0, 255 , 0));
@@ -47,8 +56,9 @@ public class PopupMessage extends Panel {
     }
 
     public void showOn(JFrame parentFrame) {
-        // Add to layered pane for overlay effect
         JLayeredPane layeredPane = parentFrame.getLayeredPane();
+
+        // Add to layered pane for overlay effect
         layeredPane.add(this, JLayeredPane.POPUP_LAYER);
 
         // Set bounds at the top center
@@ -64,8 +74,8 @@ public class PopupMessage extends Panel {
         Timer timer = new Timer(10, null); // Timer for animation
         timer.addActionListener(e -> {
             Point currentLocation = getLocation();
-            if (currentLocation.y < 5) {
-                setLocation(currentLocation.x, Math.min(5, currentLocation.y + 5));
+            if (currentLocation.y < 5 + (popupNum * (height + 5))) {
+                setLocation(currentLocation.x, Math.min(5 + (popupNum * (height + 5)), currentLocation.y + 5));
             } else {
                 timer.stop();
                 Delay(layeredPane);
@@ -82,8 +92,28 @@ public class PopupMessage extends Panel {
                 setLocation(currentLocation.x, Math.max(-height - 5, currentLocation.y - 5));
             } else {
                 timer.stop();
+                popupNumber--;
                 layeredPane.remove(this);
+                for (Component component : layeredPane.getComponents()) {
+                    if (component instanceof PopupMessage) {
+                        ((PopupMessage) component).popupNum--;
+                        ((PopupMessage) component).updateLocation();
+                    }
+                }
                 layeredPane.repaint();
+            }
+        });
+        timer.start();
+    }
+
+    private void updateLocation() {
+        Timer timer = new Timer(10, null); // Timer for animation
+        timer.addActionListener(e -> {
+            Point currentLocation = getLocation();
+            if (currentLocation.y > 5 + (popupNum * (height + 5))) {
+                setLocation(currentLocation.x, Math.max(5, currentLocation.y - 5));
+            } else {
+                timer.stop();
             }
         });
         timer.start();

@@ -13,6 +13,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class StoresPage extends Page {
     private final JPanel storesButtonsPanel = new JPanel();
@@ -85,8 +86,8 @@ public class StoresPage extends Page {
 
     private void updateStoresPanel(String searchTerm) {
         storesButtonsPanel.removeAll();
-        stores = StoresService.getStores(searchTerm);
-        stores.removeIf(store -> store.getStatus() == StoreStatus.CLOSED);
+        stores = StoresService.getStores(searchTerm.toLowerCase(), StoreStatus.OPEN);
+        Collections.shuffle(stores);
         totalStores = stores.size();
     }
 
@@ -107,7 +108,7 @@ public class StoresPage extends Page {
         int firstVisibleRow = Math.max(0, visibleRect.y / (storeButtonHeight + verticalGap));
         int lastVisibleRow = Math.max(0, ((visibleRect.y + visibleRect.height) / (storeButtonHeight + verticalGap)) + 2);
 
-        if (firstVisibleRow > 0) {firstVisibleRow-= 2;}
+        if (firstVisibleRow > 1) {firstVisibleRow-= 2;}
 
         // Calculate product indices for visible rows
         int startIndex = firstVisibleRow * storesPerRow;
@@ -117,36 +118,38 @@ public class StoresPage extends Page {
         for (Component component : storesButtonsPanel.getComponents()) {
             if (component instanceof JButton button) {
                 int buttonIndex = (int) button.getClientProperty("index");
-                if (buttonIndex < startIndex || buttonIndex >= endIndex) {
-                    storesButtonsPanel.remove(button); // Remove buttons outside the visible area
+                if ((buttonIndex < startIndex || buttonIndex > endIndex) && button.isVisible()) {
+                    button.setVisible(false); // Remove buttons outside the visible area
+                    //System.out.println(buttonIndex);
                 }
             }
         }
 
         // Add buttons in visible area
         for (int i = startIndex; i < endIndex; i++) {
-            if (!isButtonVisible(i)) {
-                JButton storeButton = getStoreButton(stores.get(i));
-                storeButton.putClientProperty("index", i);
+            if (!isButtonExist(i)) {
+                JButton productButton = getStoreButton(stores.get(i));
+                productButton.putClientProperty("index", i);
 
                 int row = i / storesPerRow;
-                int col = i % storesPerRow;
+                int col = (i + storesPerRow) % storesPerRow;
                 int x = (col * (storeButtonWidth + horizontalGap)) + ((panelWidth - (storesPerRow * (storeButtonWidth + horizontalGap))) / 2);
                 int y = row * (storeButtonHeight + verticalGap);
 
-                storeButton.setBounds(x, y, storeButtonWidth, storeButtonHeight);
-                storesButtonsPanel.add(storeButton);
+                productButton.setBounds(x, y + 20, storeButtonWidth, storeButtonHeight);
+                storesButtonsPanel.add(productButton);
             }
         }
-        storesButtonsPanel.revalidate();
-        storesButtonsPanel.repaint();
     }
 
-    private boolean isButtonVisible(int index) {
+    private boolean isButtonExist(int index) {
         for (Component component : storesButtonsPanel.getComponents()) {
             if (component instanceof JButton button) {
-                Integer buttonIndex = (Integer) button.getClientProperty("index");
-                if (buttonIndex != null && buttonIndex == index) {
+                int buttonIndex = (int) button.getClientProperty("index");
+                if (buttonIndex == index) {
+                    button.setVisible(true);
+                    storesButtonsPanel.revalidate();
+                    storesButtonsPanel.repaint();
                     return true;
                 }
             }
@@ -179,10 +182,10 @@ public class StoresPage extends Page {
         textPanel.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 3));
 
         JLabel nameLabel = new JLabel(store.getName());
-        nameLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        nameLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.BOLD, 16));
 
         JLabel descriptionLabel = new JLabel("<html><i>" + store.getDescription() + "</i></html>");
-        descriptionLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        descriptionLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.PLAIN, 12));
 
         textPanel.add(nameLabel, BorderLayout.NORTH);
         textPanel.add(descriptionLabel, BorderLayout.CENTER);

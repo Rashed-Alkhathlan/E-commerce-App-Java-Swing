@@ -33,7 +33,7 @@ public class ScrollPane extends JScrollPane {
 
         public ScrollBar() {
             setUI(new ModernScrollBarUI());
-            setPreferredSize(new Dimension(5, 5));
+            setPreferredSize(new Dimension(10, 10));
             setBackground(new Color(242, 242, 242));
             setUnitIncrement(20);
         }
@@ -42,11 +42,10 @@ public class ScrollPane extends JScrollPane {
 
             private static final int SCROLL_BAR_ALPHA_ROLLOVER = 100;
             private static final int SCROLL_BAR_ALPHA = 50;
-            private static final int THUMB_SIZE = 8;
+            private static final int THUMB_SIZE = 10;
             private static final Color THUMB_COLOR = Color.BLACK;
 
-            public ModernScrollBarUI() {
-            }
+            public ModernScrollBarUI() {}
 
             @Override
             protected JButton createDecreaseButton(int orientation) {

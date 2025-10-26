@@ -2,6 +2,7 @@ package GUI;
 
 import Components.Button;
 import Components.CardPanel;
+import Enums.StoreStatus;
 import Enums.UserRole;
 import Objects.Main;
 import Services.ProductsService;
@@ -27,17 +28,17 @@ public class HomePage extends Page {
         setupLayout();
         actionListener();
 
-        CardPanel panel = new CardPanel(Images.getImage("StoresImg", 30, 30), "Browse Stores", "Over "+ StoresService.getStoresCount() +"+ Stores available...", "<html><div style='text-align: center;'>"+"Discover All Types of Stores, and Categories"+"</div></html>");
+        CardPanel panel = new CardPanel(Images.getImage("StoresImg", 30, 30), "Browse Stores", "Over "+ StoresService.getStoreCount(StoreStatus.OPEN) +"+ Stores available...", "<html><div style='text-align: center;'>"+"Discover All Types of Stores, and Categories"+"</div></html>");
         allStoresButton.setPreferredSize(new Dimension(300, 200));
         allStoresButton.setMargin(new Insets(0, 0, 0, 0));
         allStoresButton.add(panel);
 
-        CardPanel panel1 = new CardPanel(Images.getImage("ProductsImg", 30, 30), "Browse Products", "Over " + ProductsService.getProductCount() + "+ Products across all Stores...", "<html><div style='text-align: center;'>"+"Discover Products of All Types, and Categories"+"</div></html>");
+        CardPanel panel1 = new CardPanel(Images.getImage("ProductsImg", 30, 30), "Browse Products", "Over " + ProductsService.getProductsCount(StoreStatus.OPEN) + "+ Products across all Stores...", "<html><div style='text-align: center;'>"+"Discover Products of All Types, and Categories"+"</div></html>");
         allProductsButton.setPreferredSize(new Dimension(300, 200));
         allProductsButton.setMargin(new Insets(0, 0, 0, 0));
         allProductsButton.add(panel1);
 
-        String value = Main.getCurrentUser().getRole() == UserRole.MANAGER ? "Manage your Store and products" : Main.getCurrentUser().getRole() == UserRole.ADMIN ? "Manage and look over everything in the app" : "Login to be able to Checkout";
+        String value = Main.isSignedIn() ? Main.getCurrentUser().getRole() == UserRole.MANAGER ? "Manage your Store and products" : Main.getCurrentUser().getRole() == UserRole.ADMIN ? "Manage and look over everything in the app" : "Manage your account" : "Login to be able to Checkout";
         CardPanel panel2 = new CardPanel(Images.getImage("ManImg", 30, 30), "Account", value, "");
         accountButton.setPreferredSize(new Dimension(300, 200));
         accountButton.setMargin(new Insets(0, 0, 0, 0));

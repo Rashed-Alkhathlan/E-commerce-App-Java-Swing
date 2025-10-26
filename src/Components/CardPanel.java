@@ -57,13 +57,13 @@ public class CardPanel extends Panel {
 
     private void initComponents() {
 
-        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 28)); // NOI18N
+        titleLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.BOLD, 28)); // NOI18N
         titleLabel.setForeground(new Color(255, 255, 255));
 
-        descriptionLabel.setFont(new Font("SansSerif", Font.BOLD, 12)); // NOI18N
+        descriptionLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.BOLD, 12)); // NOI18N
         descriptionLabel.setForeground(new Color(220, 220, 220));
 
-        valuesLabel.setFont(new Font("SansSerif", Font.ITALIC, 10)); // NOI18N
+        valuesLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.ITALIC, 10)); // NOI18N
         valuesLabel.setForeground(new Color(220, 220, 220));
 
         setupLayout();

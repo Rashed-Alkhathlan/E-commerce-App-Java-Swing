@@ -30,7 +30,7 @@ public class Dialog extends JDialog {
         textPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
 
         JLabel messageLabel = new JLabel(text, SwingConstants.CENTER);
-        messageLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        messageLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.BOLD, 14));
         textPanel.add(messageLabel, BorderLayout.CENTER);
 
         JPanel buttonPanel = new JPanel(new FlowLayout());

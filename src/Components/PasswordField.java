@@ -28,10 +28,12 @@ public class PasswordField extends JPasswordField {
     private void initPasswordField() {
         setBorder(null);
         setOpaque(false);
-        setFont(new Font("SansSerif", Font.PLAIN, 13));
+        setFont(new Font(UIManager.getFont("TextField.font").getFontName(), Font.PLAIN, 13));
         setSelectionColor(new Color(220, 204, 182));
 
         Button showButton = new Button("Show");
+        showButton.setBorder(new EmptyBorder(0, 0, 1, 2));
+        showButton.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.PLAIN, 13));
         showButton.setOpaque(false);
         showButton.setHoverable(false);
         showButton.addActionListener(new ActionListener() {

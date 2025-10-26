@@ -35,10 +35,9 @@ public class TextField extends JTextField {
     }
 
     private void initTextField() {
-        //setBorder(BorderFactory.createCompoundBorder(new LineBorder(new Color(175, 175, 175), 1), new EmptyBorder(5, 5, 5, 5)));
         setBorder(null);
         setOpaque(false);
-        setFont(new Font("SansSerif", Font.PLAIN, 13));
+        setFont(new Font(UIManager.getFont("TextField.font").getFontName(), Font.PLAIN, 13));
         setSelectionColor(new Color(220, 204, 182));
 
         getDocument().addDocumentListener(new DocumentListener() {

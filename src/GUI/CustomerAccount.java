@@ -25,5 +25,8 @@ public class CustomerAccount extends AccountPage {
                 UsersService.makeManager(Main.getCurrentUser());
             });
         });
+        menuPanel.addDivider();
+        menuPanel.addButton("Log Out", "ExitImg", e -> UsersService.logout());
+        menuPanel.addDivider();
     }
 }

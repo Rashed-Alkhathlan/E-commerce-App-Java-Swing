@@ -99,7 +99,7 @@ public class Table extends JTable {
             super(text);
             setOpaque(true);
             setBackground(Color.WHITE);
-            setFont(new Font("SanSerif", Font.BOLD, 12));
+            setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.BOLD, 12));
             setForeground(new Color(102, 102, 102));
             setBorder(new EmptyBorder(10, 0, 10, 0));
         }

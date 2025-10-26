@@ -19,36 +19,28 @@ public final class StoresService extends Service {
         return database.getStore(id);
     }
 
-    public static ArrayList<Store> getStores() {
-        return database.getAllStores(null, "");
+    public static ArrayList<Store> getStores(String searchTerm, StoreStatus status) {
+        return database.getStores(searchTerm, status);
     }
 
-    public static ArrayList<Store> getStores(UUID managerId) {
-        return database.getAllStores(managerId, "");
-    }
-
-    public static ArrayList<Store> getStores(String searchTerm) {
-        return database.getAllStores(null, searchTerm);
-    }
-
-    public static ArrayList<Store> getStores(UUID managerId, String searchTerm) {
-        return database.getAllStores(managerId, searchTerm);
-    }
-
-    public static int getStoresCount() {
+    public static int getStoreCount() {
         try {
-            return database.getAllStoresCount(null);
+            return database.getStoresCount(null);
         } catch (Exception e) {
             return 0;
         }
     }
 
-    public static int getStoresCount(StoreStatus status) {
-        return database.getAllStoresCount(status);
+    public static int getStoreCount(StoreStatus status) {
+        try {
+            return database.getStoresCount(status);
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     public static int getStoreProductCount(UUID store_id) {
-        return database.getAllProductsCount(store_id);
+        return database.getProductsCount(store_id, null);
     }
 
     public static Manager getStoreOwner(UUID store_Id) {

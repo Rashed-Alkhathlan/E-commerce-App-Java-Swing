@@ -58,10 +58,10 @@ public class RegisterPage extends Page {
         registerPanel.setBackground(Color.WHITE);
 
         titleLabel.setOpaque(false);
-        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 24));
+        titleLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.BOLD, 24));
 
         warningLabel.setForeground(Color.RED);
-        warningLabel.setFont(new Font("SansSerif", Font.ITALIC, 11));
+        warningLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.ITALIC, 11));
 
         setupRegisterPanelLayout();
     }

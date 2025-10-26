@@ -1,5 +1,6 @@
 package Database;
 
+import Enums.OrderStatus;
 import Enums.StoreStatus;
 import Enums.UserRole;
 import Objects.*;
@@ -8,6 +9,8 @@ import Utils.Images;
 import javax.swing.*;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @SuppressWarnings("CallToPrintStackTrace")
@@ -74,7 +77,7 @@ public class DBUtils {
     }
 
     public void addToCart(UUID userId, UUID productId) {
-        String query = "INSERT INTO Cart (user_id, product_id, quantity) VALUES (?, ?, 1) " +
+        String query = "INSERT INTO Cart_item (user_id, product_id, quantity) VALUES (?, ?, 1) " +
                 "ON DUPLICATE KEY UPDATE quantity = quantity + 1";
         try (PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, userId.toString());
@@ -86,8 +89,8 @@ public class DBUtils {
     }
 
     public void removeFromCart(UUID userId, UUID productId) {
-        String updateQuery = "UPDATE Cart SET quantity = quantity - 1 WHERE user_id = ? AND product_id = ? AND quantity > 1";
-        String deleteQuery = "DELETE FROM Cart WHERE user_id = ? AND product_id = ? AND quantity = 1";
+        String updateQuery = "UPDATE Cart_item SET quantity = quantity - 1 WHERE user_id = ? AND product_id = ? AND quantity > 1";
+        String deleteQuery = "DELETE FROM Cart_item WHERE user_id = ? AND product_id = ? AND quantity = 1";
 
         try (PreparedStatement updateStmt = conn.prepareStatement(updateQuery)) {
             updateStmt.setString(1, userId.toString());
@@ -154,6 +157,111 @@ public class DBUtils {
         }
     }
 
+    public boolean registerOrder(UUID orderId, String date, UUID userId, OrderStatus status, ArrayList<HashMap.Entry<Product, Integer>> items) {
+        String insertOrderSQL = "INSERT INTO `Order` (order_id, order_date, total_price, status, user_id) VALUES (?, ?, ?, ?, ?)";
+        String insertOrderItemSQL = "INSERT INTO Order_item (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)";
+
+        double totalPrice = items.stream()
+                .mapToDouble(e -> e.getKey().getPrice() * e.getValue())
+                .sum();
+
+        try {
+            conn.setAutoCommit(false); // Start transaction
+
+            // Insert into Order table
+            try (PreparedStatement orderStmt = conn.prepareStatement(insertOrderSQL)) {
+                orderStmt.setString(1, orderId.toString());
+                orderStmt.setString(2, date);
+                orderStmt.setDouble(3, totalPrice);
+                orderStmt.setString(4, status.name().toUpperCase());
+                orderStmt.setString(5, userId.toString());
+                orderStmt.executeUpdate();
+            }
+
+            // Insert each Order_item
+            try (PreparedStatement itemStmt = conn.prepareStatement(insertOrderItemSQL)) {
+                for (Map.Entry<Product, Integer> entry : items) {
+                    Product product = entry.getKey();
+                    int quantity = entry.getValue();
+
+                    itemStmt.setString(1, orderId.toString());
+                    itemStmt.setString(2, product.getId().toString());
+                    itemStmt.setInt(3, quantity);
+                    itemStmt.setDouble(4, product.getPrice());
+                    itemStmt.addBatch();
+
+                    updateProductQuantity(product.getId(), product.getQuantity() - quantity);
+                }
+                itemStmt.executeBatch();
+            }
+
+            conn.commit(); // Commit transaction
+            return true;
+        } catch (SQLException e) {
+            try {
+                conn.rollback(); // Rollback on error
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                conn.setAutoCommit(true); // Restore default
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    public ArrayList<Order> getOrdersById(UUID userId) {
+        String orderSQL = "SELECT order_id, order_date, total_price, status FROM `Order` WHERE user_id = ?";
+        String itemsSQL = "SELECT product_id, quantity, price FROM Order_item WHERE order_id = ?";
+
+        ArrayList<Order> orders = new ArrayList<>();
+
+        try (
+                PreparedStatement orderStmt = conn.prepareStatement(orderSQL);
+                PreparedStatement itemsStmt = conn.prepareStatement(itemsSQL)
+        ) {
+            // Get main order
+            orderStmt.setString(1, userId.toString());
+            ResultSet orderRs = orderStmt.executeQuery();
+
+
+            while (orderRs.next()) {
+                String id = orderRs.getString("order_id");
+                String  date = orderRs.getString("order_date");
+                double total = orderRs.getDouble("total_price");
+                String status = orderRs.getString("status");
+
+                // Get items
+                itemsStmt.setString(1, id);
+                ResultSet itemsRs = itemsStmt.executeQuery();
+
+                HashMap<Product, Integer> items = new HashMap<>();
+                while (itemsRs.next()) {
+                    String productId = itemsRs.getString("product_id");
+                    int quantity = itemsRs.getInt("quantity");
+                    double price = itemsRs.getDouble("price");
+
+                    Product product = getProduct(UUID.fromString(productId));
+                    product.setPrice(price);
+                    items.put(product, quantity);
+                }
+
+                orders.add(new Order(UUID.fromString(id), date, total, items, OrderStatus.valueOf(status)));
+            }
+
+            return orders;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
     public ArrayList<User> getAllUsers(UserRole role) {
         String query;
         ArrayList<User> users = new ArrayList<>();
@@ -195,22 +303,24 @@ public class DBUtils {
         return users;
     }
 
-    public ArrayList<Store> getAllStores(UUID managerId, String searchTerm) {
+    public ArrayList<Store> getStores(String searchTerm, StoreStatus storeStatus) {
         String query;
         ArrayList<Store> stores = new ArrayList<>();
 
-        if (managerId != null && searchTerm.isEmpty()) {
-            query = "SELECT Stores.* FROM Stores JOIN Managed ON Stores.id = Managed.store_id WHERE Managed.user_id = ?";
-        } else {
+        if (storeStatus == null) {
             query = "SELECT * FROM stores WHERE name LIKE CONCAT('%', ?, '%') OR description LIKE CONCAT('%', ?, '%')";
+        } else {
+            query = "SELECT * FROM stores WHERE (name LIKE CONCAT('%', ?, '%') OR description LIKE CONCAT('%', ?, '%')) AND status = ?";
         }
 
         try (PreparedStatement stmt = conn.prepareStatement(query)) {
-            if (managerId != null && searchTerm.isEmpty()) {
-                stmt.setString(1, managerId.toString());
+            if (storeStatus == null) {
+                stmt.setString(1, searchTerm);
+                stmt.setString(2, searchTerm);
             } else {
                 stmt.setString(1, searchTerm);
                 stmt.setString(2, searchTerm);
+                stmt.setString(3, storeStatus.name().toUpperCase());
             }
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -233,29 +343,46 @@ public class DBUtils {
         return stores;
     }
 
-    public ArrayList<Product> getAllProducts(UUID storeId, String searchTerm) {
+    public ArrayList<Product> getProducts(String searchTerm, UUID storeId, StoreStatus storeStatus) {
         String query;
         ArrayList<Product> products = new ArrayList<>();
 
-        if (storeId != null && searchTerm.isEmpty()) {
-            query = "SELECT * FROM Products WHERE store_id = ?";
-        } else if (storeId == null) {
-            query = "SELECT * FROM Products WHERE name LIKE CONCAT('%', ?, '%') OR description LIKE CONCAT('%', ?, '%')";
+        if (storeStatus == null) {
+            if (storeId == null) {
+                query = "SELECT * FROM Products WHERE name LIKE CONCAT('%', ?, '%') OR description LIKE CONCAT('%', ?, '%')";
+            } else {
+                query = "SELECT * FROM Products WHERE store_id = ? AND (name LIKE CONCAT('%', ?, '%') OR description LIKE CONCAT('%', ?, '%'))";
+            }
         } else {
-            query = "SELECT * FROM Products WHERE store_id = ? AND (name LIKE CONCAT('%', ?, '%') OR description LIKE CONCAT('%', ?, '%'))";
+            if (storeId == null) {
+                query = "SELECT p.* FROM Products p JOIN Stores s ON p.store_id = s.id WHERE (p.name LIKE CONCAT('%', ?, '%') OR p.description LIKE CONCAT('%', ?, '%')) AND s.status = ?";
+            } else {
+                query = "SELECT p.* FROM Products p JOIN Stores s ON p.store_id = s.id WHERE p.store_id = ? AND (p.name LIKE CONCAT('%', ?, '%') OR p.description LIKE CONCAT('%', ?, '%')) AND s.status = ?";
+            }
         }
 
         try (PreparedStatement stmt = conn.prepareStatement(query)) {
 
-            if (storeId != null & searchTerm.isEmpty()) {
-                stmt.setString(1, storeId.toString());
-            } else if (storeId == null) {
-                stmt.setString(1, searchTerm);
-                stmt.setString(2, searchTerm);
+            if (storeStatus == null) {
+                if (storeId == null) {
+                    stmt.setString(1, searchTerm);
+                    stmt.setString(2, searchTerm);
+                } else {
+                    stmt.setString(1, storeId.toString());
+                    stmt.setString(2, searchTerm);
+                    stmt.setString(3, searchTerm);
+                }
             } else {
-                stmt.setString(1, storeId.toString());
-                stmt.setString(2, searchTerm);
-                stmt.setString(3, searchTerm);
+                if (storeId == null) {
+                    stmt.setString(1, searchTerm);
+                    stmt.setString(2, searchTerm);
+                    stmt.setString(3, storeStatus.name().toUpperCase());
+                } else {
+                    stmt.setString(1, storeId.toString());
+                    stmt.setString(2, searchTerm);
+                    stmt.setString(3, searchTerm);
+                    stmt.setString(4, storeStatus.name().toUpperCase());
+                }
             }
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -281,7 +408,7 @@ public class DBUtils {
         return products;
     }
 
-    public ArrayList<Address> getAllAddresses(UUID userId) {
+    public ArrayList<Address> getAddresses(UUID userId) {
         String query = "SELECT * FROM Address WHERE user_id = ?";
         ArrayList<Address> addresses = new ArrayList<>();
 
@@ -387,34 +514,7 @@ public class DBUtils {
         return null;
     }
 
-    public ArrayList<User> getAllStoreManagers(UUID storeId) {
-        ArrayList<User> managers = new ArrayList<>();
-        String query = "SELECT Users.* FROM Users JOIN Managed ON Users.id = Managed.user_id WHERE Managed.store_id = ?";
-
-        try (PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, storeId.toString());
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    UUID id = UUID.fromString(rs.getString("id"));
-                    String firstName = rs.getString("first_name");
-                    String lastName = rs.getString("last_name");
-                    String phoneNumber = rs.getString("phone_number");
-                    String email = rs.getString("email");
-                    String password = rs.getString("password");
-                    String joinedDate = rs.getString("joined_date");
-
-                    managers.add(new Manager(id, firstName, lastName, phoneNumber, email, password, joinedDate));
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return managers;
-    }
-
-    public int getAllUsersCount(UserRole role) {
+    public int getUsersCount(UserRole role) {
         String query;
         int userCount = 0;
 
@@ -441,7 +541,7 @@ public class DBUtils {
         return userCount;
     }
 
-    public int getAllStoresCount(StoreStatus status) {
+    public int getStoresCount(StoreStatus status) {
         String query;
         int storeCount = 0;
 
@@ -468,12 +568,18 @@ public class DBUtils {
         return storeCount;
     }
 
-    public int getAllProductsCount(UUID storeId) {
+    public int getProductsCount(UUID storeId, StoreStatus status) {
         String query;
         int productCount = 0;
 
         if (storeId != null) {
             query = "SELECT COUNT(*) AS product_count FROM Products WHERE store_id = ?";
+        } else if (status != null) {
+            if (status == StoreStatus.OPEN) {
+                query = "SELECT COUNT(*) AS product_count FROM Products p JOIN Stores s ON p.store_id = s.id WHERE s.status = ? AND p.quantity > 0";
+            } else {
+                query = "SELECT COUNT(*) AS product_count FROM Products p JOIN Stores s ON p.store_id = s.id WHERE s.status = ?";
+            }
         } else {
             query = "SELECT COUNT(*) AS product_count FROM Products";
         }
@@ -481,6 +587,8 @@ public class DBUtils {
         try (PreparedStatement stmt = conn.prepareStatement(query)) {
             if (storeId != null) {
                 stmt.setString(1, storeId.toString());
+            } else if (status != null) {
+                stmt.setString(1, status.name().toUpperCase());
             }
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -496,7 +604,7 @@ public class DBUtils {
     }
 
     public Cart getCart(UUID userId) {
-        String query = "SELECT * FROM Cart WHERE user_id = ?";
+        String query = "SELECT * FROM Cart_item WHERE user_id = ?";
         Cart cart = new Cart();
 
         try (PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -526,6 +634,17 @@ public class DBUtils {
             stmt.setInt(4, quantity);
             stmt.setBytes(5, Images.imageIconToByteArray(image));
             stmt.setString(6, id.toString());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateProductQuantity(UUID id, int quantity) {
+        String query = "UPDATE Products SET quantity = ? WHERE id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, quantity);
+            stmt.setString(2, id.toString());
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

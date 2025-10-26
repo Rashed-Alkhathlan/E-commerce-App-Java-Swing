@@ -136,8 +136,12 @@ public class Menu extends Panel {
     }
 
     public void addDivider() {
+        addDivider(0);
+    }
+
+    public void addDivider(int y) {
         JSeparator divider = new JSeparator(SwingConstants.HORIZONTAL);
-        divider.setBounds(15, 100 + (numberOfComponents * 50), extendedWidth - 30, 5);
+        divider.setBounds(15, 100 + (y) + (numberOfComponents * 50), extendedWidth - 30, 5);
         add(divider);
         dividers.add(divider);
         numberOfComponents++;
@@ -153,7 +157,7 @@ public class Menu extends Panel {
         label.setBounds(15, 75 + (numberOfComponents * 50), extendedWidth - 30, 30);
 
         label.setForeground(Color.WHITE);
-        label.setFont(new Font("SansSerif", Font.BOLD, 17));
+        label.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.BOLD, 19));
         JLabel iconLabel = new JLabel(Images.getImage(icon));
         iconLabel.setBounds(15, 80 + (numberOfComponents * 50), 20, 20);
 
@@ -177,14 +181,14 @@ public class Menu extends Panel {
 
         private void initButton() {
             setBorder(new EmptyBorder(5, 5, 5, 5));
-            setLayout(new BorderLayout(0, 0));
+            setLayout(new BorderLayout(1, 0));
 
             setOpaque(false);
 
             JLabel imgLabel = new JLabel(Images.getImage(icon, 20, 20));
-            JLabel label = new JLabel("    " + name);
+            JLabel label = new JLabel("<html>" + "&nbsp;&nbsp;&nbsp;&nbsp;" + name + "</html>");
 
-            label.setFont(new Font("SansSerif", Font.BOLD, 15));
+            label.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.BOLD, 16));
             label.setForeground(Color.WHITE);
 
             add(imgLabel, BorderLayout.WEST);

@@ -1,5 +1,5 @@
 package Enums;
 
 public enum OrderStatus {
-    PREPARING, ONTHEWAY, COMPLETED, CANCELED
+    PENDING, SHIPPED, DELIVERED, CANCELED
 }

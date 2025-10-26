@@ -39,21 +39,29 @@ public final class UsersService extends Service {
         return response;
     }
 
-    public static boolean login(String phoneNumberOrEmail, String password) {
+    public static int login(String phoneNumberOrEmail, String password) {
         User user = database.login(phoneNumberOrEmail, password);
+
+        boolean removedProduct = false;
         if (user != null) {
             Cart oldCart = Main.getCurrentUser().getCart();
             user.setCart(database.getCart(user.getId()));
             Main.setCurrentUser(user);
             for (Map.Entry<Product, Integer> product : oldCart.getProducts()) {
                 for (int i = 0; i < product.getValue(); i++) {
-                    database.addToCart(user.getId(), product.getKey().getId());
-                    user.getCart().addProduct(product.getKey(), product.getValue());
+                    if (CartService.addToCart(product.getKey(), 1) != 0) {
+                        removedProduct = true;
+                    }
                 }
             }
-            return true;
+
+            if (removedProduct) {
+                return -1;
+            } else {
+                return 0;
+            }
         } else {
-            return false;
+            return 1;
         }
     }
 
@@ -62,11 +70,11 @@ public final class UsersService extends Service {
     }
 
     public static int getUsersCount(UserRole role) {
-        return database.getAllUsersCount(role);
+        return database.getUsersCount(role);
     }
 
     public static int getUsersCount() {
-        return database.getAllUsersCount(null);
+        return database.getUsersCount(null);
     }
 
     public static ArrayList<User> getUsers() {
@@ -75,10 +83,6 @@ public final class UsersService extends Service {
 
     public static ArrayList<User> getUsers(UserRole role) {
         return database.getAllUsers(role);
-    }
-
-    public static ArrayList<Store> getManagerStores(UUID managerId) {
-        return database.getAllStores(managerId, "");
     }
 
     public static void makeManager(User user) {
@@ -103,10 +107,6 @@ public final class UsersService extends Service {
     }
 
     public static ArrayList<Address> getAddresses(UUID userId) {
-        return database.getAllAddresses(userId);
-    }
-
-    public static ArrayList<User> getManagers(UUID store_id) {
-        return database.getAllStoreManagers(store_id);
+        return database.getAddresses(userId);
     }
 }

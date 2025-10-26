@@ -41,7 +41,7 @@ public class StartPage extends Page {
         StartPanel.setBackground(Color.WHITE);
 
         titleLabel.setOpaque(false);
-        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 24));
+        titleLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.BOLD, 24));
         setupStartPanelLayout();
     }
 

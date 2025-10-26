@@ -2,20 +2,19 @@ package GUI;
 
 import Components.*;
 import Components.Button;
+import Components.Label;
 import Components.Panel;
 import Components.TextField;
 import Services.UsersService;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class LoginPage extends Page {
 
     private final Panel loginPanel = new Panel();
 
-    private final Button registerButton = new Button("New customer? start here.");
+    private final Label registerLabel = new Label("New customer? start here.");
     private final Button loginButton = new Button("Login");
     private final Button backButton = new Button("Back");
     private final JLabel phoneOrEmailLabel = new JLabel("Phone number or email:");
@@ -44,7 +43,6 @@ public class LoginPage extends Page {
 
     public void actionListener() {
         backButton.addActionListener(e -> MyFrame.goBack());
-        switchToPageWhenPressed(registerButton, RegisterPage.class);
         loginButton.addActionListener(e -> getInput());
     }
 
@@ -52,14 +50,15 @@ public class LoginPage extends Page {
         loginPanel.setArch(20);
         loginPanel.setBackground(Color.WHITE);
 
-        registerButton.setOpaque(false);
-        registerButton.setForeground(new Color(10, 100, 255));
+        registerLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        registerLabel.setForeground(new Color(50, 120, 255));
+        registerLabel.addClickableAction(() -> MyFrame.showPage(RegisterPage.class));
 
         titleLabel.setOpaque(false);
-        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 24));
+        titleLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.BOLD, 24));
 
         warningLabel.setForeground(Color.RED);
-        warningLabel.setFont(new Font("SansSerif", Font.ITALIC, 11));
+        warningLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.ITALIC, 11));
         setupLoginPanelLayout();
     }
 
@@ -100,7 +99,7 @@ public class LoginPage extends Page {
                                 .addComponent(warningLabel, GroupLayout.Alignment.CENTER)
                                 .addComponent(loginButton, GroupLayout.Alignment.CENTER, 100, 250, 250)
                                 .addComponent(backButton, GroupLayout.Alignment.CENTER, 100, 250, 250)
-                                .addComponent(registerButton, GroupLayout.Alignment.CENTER, 100, 200, 200))
+                                .addComponent(registerLabel, GroupLayout.Alignment.CENTER, 100, 200, 200))
                         .addContainerGap(40, 60)
         );
         layout.setVerticalGroup(
@@ -123,7 +122,7 @@ public class LoginPage extends Page {
                         .addGap(15)
                         .addComponent(backButton, 30, 30, 30)
                         .addGap(15)
-                        .addComponent(registerButton, 15, 15, 15)
+                        .addComponent(registerLabel, 15, 15, 15)
                         .addGap(50)
                         .addContainerGap(100, 100)
 
@@ -135,14 +134,20 @@ public class LoginPage extends Page {
             updateWarningLabel("Please fill mandatory fields");
         } else if (!phoneOrEmailField.getText().matches(PHONE_REGEX) && !phoneOrEmailField.getText().matches(EMAIL_REGEX)) {
             updateWarningLabel("Please enter a valid phone number / email");
-        } else if (UsersService.login(phoneOrEmailField.getText(), new String(passwordField.getPassword()))) {
-            warningLabel.setForeground(Color.GRAY);
-            updateWarningLabel("Logged in successfully. Redirecting...");
-            new PopupMessage("Logged in Successfully", PopupMessage.Type.SUCCESS);
-        } else if (phoneOrEmailField.getText().matches(PHONE_REGEX)){
-            updateWarningLabel("Wrong phone number / password");
-        } else if (phoneOrEmailField.getText().matches(EMAIL_REGEX)) {
-            updateWarningLabel("Wrong email / password");
+        } else {
+            int response = UsersService.login(phoneOrEmailField.getText(), new String(passwordField.getPassword()));
+            if (response <= 0) {
+                warningLabel.setForeground(Color.GRAY);
+                updateWarningLabel("Logged in successfully. Redirecting...");
+                new PopupMessage("Logged in Successfully", PopupMessage.Type.SUCCESS);
+                if (response == -1) {
+                    new PopupMessage("Some Cart items were removed", PopupMessage.Type.WARNING);
+                }
+            } else if (phoneOrEmailField.getText().matches(PHONE_REGEX)) {
+                updateWarningLabel("Wrong phone number / password");
+            } else if (phoneOrEmailField.getText().matches(EMAIL_REGEX)) {
+                updateWarningLabel("Wrong email / password");
+            }
         }
     }
 

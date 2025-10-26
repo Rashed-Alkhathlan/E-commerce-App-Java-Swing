@@ -1,18 +1,18 @@
 package GUI;
 
-import Components.TextField;
 import Components.Button;
 import Components.ScrollPane;
+import Enums.StoreStatus;
 import Objects.*;
 import Services.*;
 import Utils.Images;
 
-import javax.naming.directory.SearchControls;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.UUID;
 
 public class ProductsPage extends Page {
@@ -26,11 +26,11 @@ public class ProductsPage extends Page {
 
     private String searchTerm = "";
 
-    private final int productButtonWidth = 210;
-    private final int productButtonHeight = 280;
+    private final int productButtonWidth = 260;
+    private final int productButtonHeight = 370;
 
-    private final int iconWidth = 210;
-    private final int iconHeight = 210;
+    private final int iconWidth = productButtonWidth;
+    private final int iconHeight = productButtonWidth;
 
     ProductsPage() {
         currentStore = null;
@@ -54,7 +54,7 @@ public class ProductsPage extends Page {
         initPage();
     }
 
-    protected UUID getCurrentStore() {
+    protected UUID getCurrentStoreId() {
         return currentStore == null ? null : currentStore.getId();
     }
 
@@ -106,12 +106,13 @@ public class ProductsPage extends Page {
 
     private void updateProducts(String searchTerm) {
         productsButtonsPanel.removeAll();
-        if (currentStore != null) {
-            products = ProductsService.getProducts(currentStore.getId(), searchTerm);
+        if (currentStore != null && (currentStore.getStatus() == StoreStatus.OPEN)) {
+            products = ProductsService.getProducts(searchTerm.toLowerCase(), currentStore.getId(), StoreStatus.OPEN);
         } else {
-            products = ProductsService.getProducts(searchTerm);
+            products = ProductsService.getProducts(searchTerm.toLowerCase(), null, StoreStatus.OPEN);
         }
         products.removeIf(product -> product.getQuantity() <= 0);
+        Collections.shuffle(products);
         totalProducts = products.size();
     }
 
@@ -132,7 +133,7 @@ public class ProductsPage extends Page {
         int firstVisibleRow = Math.max(0, visibleRect.y / (productButtonHeight + verticalGap));
         int lastVisibleRow = Math.max(0, (visibleRect.y + visibleRect.height) / (productButtonHeight + verticalGap) + 2);
 
-        if (firstVisibleRow > 2) {firstVisibleRow -= 2;}
+        if (firstVisibleRow > 1) {firstVisibleRow -= 2;}
 
         // Calculate product indices for visible rows
         int startIndex = firstVisibleRow * productsPerRow;
@@ -182,24 +183,15 @@ public class ProductsPage extends Page {
     //Buttons for Products
     private JButton getProductButton(Product product) {
         Button productButton = new Button();
-        productButton.setArch(10);
-        productButton.setOpaque(true);
-        productButton.setBackground(buttonColor);
+        productButton.setBorderPainted(true);
+        productButton.setArch(0);
+        productButton.setBackground(new Color(240, 240, 240));
+        productButton.setBorderColor(new Color(240, 240, 240));
         productButton.setPreferredSize(new Dimension(productButtonWidth, productButtonHeight));
         productButton.setLayout(new BorderLayout());
-        productButton.setBorder(new EmptyBorder(5, 5, 5, 5));
+        productButton.setBorder(new EmptyBorder(1, 1, 1, 1));
 
-        JLabel imageLabel = new JLabel();
-        new SwingWorker<>() {
-            @Override
-            protected Void doInBackground() {
-                Icon icon = (product.getMainImageIcon() != null)
-                        ? Images.scaleImage(product.getMainImageIcon(), iconWidth, iconHeight)
-                        : Images.getImage("MissingImg", iconWidth, iconHeight);
-                imageLabel.setIcon(icon);
-                return null;
-            }
-        }.execute();
+        JLabel imageLabel = new JLabel(Images.scaleImage(product.getMainImageIcon(), iconWidth, iconHeight));
         JPanel textPanel = getProductButtonPanel(product);
 
         productButton.add(imageLabel, BorderLayout.NORTH);
@@ -213,19 +205,18 @@ public class ProductsPage extends Page {
     private JPanel getProductButtonPanel(Product product) {
         JPanel textPanel = new JPanel();
         textPanel.setLayout(new BorderLayout());
-        //textPanel.setBackground(buttonColor);
-        textPanel.setOpaque(false);
-        textPanel.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 3));
+        textPanel.setBackground(buttonColor);
+        textPanel.setBorder(BorderFactory.createEmptyBorder(10, 5, 3, 3));
 
         JLabel nameLabel = new JLabel(product.getName());
-        nameLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        nameLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.PLAIN, 20));
 
         JLabel descriptionLabel = new JLabel("<html><i>" + product.getDescription() + "</i></html>");
-        descriptionLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        descriptionLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.PLAIN, 15));
 
         JLabel priceLabel = new JLabel("$" + product.getPrice());
-        priceLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-        priceLabel.setForeground(Color.GREEN);
+        priceLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.BOLD, 23));
+        priceLabel.setForeground(new Color(5,5, 5));
 
         textPanel.add(nameLabel, BorderLayout.NORTH);
         textPanel.add(descriptionLabel, BorderLayout.CENTER);

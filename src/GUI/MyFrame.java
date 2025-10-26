@@ -4,16 +4,17 @@ import Objects.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.lang.reflect.Constructor;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.Stack;
-import java.util.function.Function;
 
 public final class MyFrame {
     private static final JFrame frame = new JFrame("ShopSphere");
     private static final JPanel mainPanel = new JPanel();
     private static JPanel loadingPanel;
-    private static Stack<PageHistoryEntry> history = new Stack<>();
+    private static final Stack<PageHistoryEntry> history = new Stack<>();
     private static boolean inAnimation = false;
 
     private static final int width = 1300;
@@ -49,7 +50,17 @@ public final class MyFrame {
         frame.setResizable(true);
         frame.setMinimumSize(new Dimension(width, height));
 
+        setUIFont(new Font("Calibri", Font.PLAIN, 15));
+        UIManager.put("TextField.font", new Font("SansSerif", Font.PLAIN, 16));
         setupLoadingPanel();
+
+        frame.getContentPane().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
+            }
+        });
+
         showPage(StartPage.class);
 
         mainPanel.setLayout(new BorderLayout());
@@ -59,12 +70,29 @@ public final class MyFrame {
         frame.setVisible(true);
     }
 
+    public static void setUIFont(Font font) {
+        for (Object key : UIManager.getLookAndFeelDefaults().keySet()) {
+            if (key.toString().toLowerCase().contains("font")) {
+                UIManager.put(key, font);
+            }
+        }
+    }
+
     public static void showPage(Class<? extends Page> pageClass, Object... args) {
+        if (pageClass == AccountPage.class && !Main.isSignedIn()) {pageClass = LoginPage.class; args = new Object[]{};};
+        if (pageClass == RegisterPage.class && Main.isSignedIn()) pageClass = HomePage.class;
+        if (pageClass == LoginPage.class && Main.isSignedIn()) pageClass = HomePage.class;
+
+        Class<? extends Page> finalPageClass = pageClass;
+        Object[] finalArgs = args;
+
         load(() -> {
-            Page newPage = createPage(pageClass, args);
+            Page newPage = createPage(finalPageClass, finalArgs);
             if (newPage == null) return;
 
-            history.push(new PageHistoryEntry(pageClass, args));
+            if (history.empty() || !(history.peek().pageClass.equals(finalPageClass) && Arrays.equals(history.peek().args, finalArgs))) {
+                history.push(new PageHistoryEntry(finalPageClass, finalArgs));
+            }
 
             mainPanel.removeAll();
             mainPanel.add(newPage);
@@ -76,23 +104,18 @@ public final class MyFrame {
     public static void goBack() {
         if (history.size() > 1) {
             history.pop();
-            PageHistoryEntry previousEntry = history.pop();
+            PageHistoryEntry previousEntry = history.peek();
             showPage(previousEntry.pageClass, previousEntry.args); // Restore previous page with args
         }
     }
 
     public static void reloadPage() {
-        if (!history.isEmpty()) {
-            PageHistoryEntry previousEntry = history.pop();
-            showPage(previousEntry.pageClass, previousEntry.args); // Restore previous page with args
-        }
+        if (history.empty()) return;
+        PageHistoryEntry previousEntry = history.peek();
+        showPage(previousEntry.pageClass, previousEntry.args); // Restore previous page with args
     }
 
     private static Page createPage(Class<? extends Page> pageClass, Object... args) {
-        if (pageClass == AccountPage.class && !Main.isSignedIn()) pageClass = LoginPage.class;
-        if (pageClass == CheckoutPage.class && !Main.isSignedIn()) pageClass = LoginPage.class;
-        if (pageClass == RegisterPage.class && Main.isSignedIn()) pageClass = HomePage.class;
-        if (pageClass == LoginPage.class && Main.isSignedIn()) pageClass = HomePage.class;
 
         try {
             if (args.length == 0) {
@@ -204,7 +227,7 @@ public final class MyFrame {
 
         JLabel loadingLabel = new JLabel("Loading...");
         loadingLabel.setForeground(Color.WHITE);
-        loadingLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        loadingLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.BOLD, 18));
         loadingLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
         loadingPanel.add(loadingLabel);
@@ -216,7 +239,7 @@ public final class MyFrame {
         Class<? extends Page> pageClass;
         Object[] args;
 
-        PageHistoryEntry(Class<? extends Page> pageClass, Object[] args) {
+        PageHistoryEntry(Class<? extends Page> pageClass, Object... args) {
             this.pageClass = pageClass;
             this.args = args;
         }

@@ -1,5 +1,7 @@
 package Objects;
 
+import Enums.OrderStatus;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
@@ -7,19 +9,23 @@ import java.util.UUID;
 public class Order {
     private final UUID id;
     private final String date;
-    private double totalPrice = 0;
-    private int numberOfProducts = 0;
-    private final HashMap<Product, Integer> products = new HashMap<>();
+    private final double totalPrice;
+    private final int numberOfProducts;
+    private int numberOfItems;
+    private final HashMap<Product, Integer> products;
+    private final OrderStatus status;
 
-    Order(UUID id, String date) {
+    public Order(UUID id, String date, double totalPrice, HashMap<Product, Integer> products, OrderStatus status) {
         this.id = id;
         this.date = date;
-    }
+        this.totalPrice = totalPrice;
+        this.numberOfProducts = products.size();
+        this.products = products;
+        this.status = status;
 
-    public void addProduct(Product product, int quantity) {
-        products.put(product, products.getOrDefault(product, 0) + quantity);
-        totalPrice += product.getPrice() * quantity;
-        numberOfProducts += quantity;
+        for (HashMap.Entry<Product, Integer> product : products.entrySet()) {
+            numberOfItems += product.getValue();
+        }
     }
 
     public ArrayList<HashMap.Entry<Product, Integer>> getProducts() {
@@ -28,6 +34,10 @@ public class Order {
 
     public int getNumberOfProducts() {
         return numberOfProducts;
+    }
+
+    public int getNumberOfItems() {
+        return numberOfItems;
     }
 
     public double getTotalPrice() {
@@ -40,5 +50,9 @@ public class Order {
 
     public String getDate() {
         return date;
+    }
+
+    public OrderStatus getStatus() {
+        return status;
     }
 }

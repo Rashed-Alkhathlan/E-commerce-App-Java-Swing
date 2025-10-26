@@ -7,6 +7,7 @@ import Components.ScrollPane;
 import Components.TextField;
 import Objects.*;
 import Services.CartService;
+import Services.OrdersService;
 import Utils.Images;
 
 import javax.swing.*;
@@ -33,10 +34,10 @@ public class CartPage extends Page {
     private final JLabel appliedDiscountLabel = new JLabel("Applied Discount:");
     private final JLabel totalLabel = new JLabel("Total:");
 
-    private final JLabel subTotalNumLabel = new JLabel("$0", SwingConstants.CENTER);
-    private final JLabel shippingNumLabel = new JLabel("$0", SwingConstants.CENTER);
-    private final JLabel appliedDiscountNumLabel = new JLabel("$0", SwingConstants.CENTER);
-    private final JLabel totalNumLabel = new JLabel("$0", SwingConstants.CENTER);
+    private final JLabel subTotalNumLabel = new JLabel("$0", SwingConstants.RIGHT);
+    private final JLabel shippingNumLabel = new JLabel("$0", SwingConstants.RIGHT);
+    private final JLabel appliedDiscountNumLabel = new JLabel("$0", SwingConstants.RIGHT);
+    private final JLabel totalNumLabel = new JLabel("$0", SwingConstants.RIGHT);
 
     private final JLabel discountLabel = new JLabel("Discount code:");
     private final TextField discountField = new TextField("Enter a discount");
@@ -99,6 +100,8 @@ public class CartPage extends Page {
                 discountPercent = 0.50;
                 updateCartPanel();
                 new PopupMessage("Discount applied Successfully", PopupMessage.Type.SUCCESS);
+            } else {
+                new PopupMessage("Invalid discount code", PopupMessage.Type.ERROR);
             }
         });
         backButton.addActionListener(e -> MyFrame.goBack());
@@ -108,7 +111,12 @@ public class CartPage extends Page {
             } else if (cartProducts.isEmpty()) {
                 new PopupMessage("Cart is empty", PopupMessage.Type.WARNING);
             } else {
-                new PopupMessage("Order Placed Successfully", PopupMessage.Type.SUCCESS);
+                if (OrdersService.registerOrder(cartProducts)) {
+                    new PopupMessage("Order Placed Successfully", PopupMessage.Type.SUCCESS);
+                    CartService.emptyCart();
+                } else {
+                    new PopupMessage("There was an error when placing your order", PopupMessage.Type.ERROR);
+                }
                 MyFrame.showPage(HomePage.class);
             }
         });
@@ -125,6 +133,8 @@ public class CartPage extends Page {
         cartButtonsPanel.setBackground(Color.WHITE);
         cartButtonsPanel.setArch(20);
         cartButtonsPanel.setPreferredSize(new Dimension(350, 0));
+
+        applyDiscountButton.setBorder(new EmptyBorder(0, 0, 4, 0));
 
         updateCartPanel();
         setupCartPanelLayout();
@@ -165,21 +175,22 @@ public class CartPage extends Page {
                                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                         .addGroup(layout.createSequentialGroup()
                                                 .addComponent(subTotalLabel, 150, 150 ,150)
-                                                .addComponent(subTotalNumLabel, 70, 70, 70))
+                                                .addComponent(subTotalNumLabel, 100, 100, 100))
                                         .addGroup(layout.createSequentialGroup()
                                                 .addComponent(shippingLabel, 150, 150 ,150)
-                                                .addComponent(shippingNumLabel, 70, 70, 70))
+                                                .addComponent(shippingNumLabel, 100, 100, 100))
                                         .addGroup(layout.createSequentialGroup()
                                                 .addComponent(appliedDiscountLabel, 150, 150 ,150)
-                                                .addComponent(appliedDiscountNumLabel, 70, 70, 70))
+                                                .addComponent(appliedDiscountNumLabel, 100, 100, 100))
                                         .addGroup(layout.createSequentialGroup()
                                                 .addGroup(layout.createParallelGroup()
-                                                        .addComponent(discountLabel, 170, 170 ,170)
-                                                        .addComponent(discountField, 170, 170 ,170))
-                                                .addComponent(applyDiscountButton, 50, 50, 50))
+                                                        .addComponent(discountLabel, 200, 200 ,200)
+                                                        .addComponent(discountField, 200, 200 ,200))
+                                                .addGap(3)
+                                                .addComponent(applyDiscountButton, 47, 47, 47))
                                         .addGroup(layout.createSequentialGroup()
                                                 .addComponent(totalLabel, 150, 150 ,150)
-                                                .addComponent(totalNumLabel, 70, 70, 70)))
+                                                .addComponent(totalNumLabel, 100, 100, 100)))
                                 .addComponent(checkoutButton, 200, 200, 200)
                                 .addComponent(backButton, 200, 200 ,200))
                         .addContainerGap(50, Short.MAX_VALUE)
@@ -279,7 +290,7 @@ public class CartPage extends Page {
                 int x = 2;
                 int y = i * (productButtonHeight + verticalGap);
 
-                productButton.setBounds(x, y, panelWidth - 8, productButtonHeight);
+                productButton.setBounds(x, y, panelWidth - 13, productButtonHeight);
                 productsButtonsPanel.add(productButton);
             }
         }
@@ -326,17 +337,17 @@ public class CartPage extends Page {
         JPanel textPanel = new JPanel();
         textPanel.setLayout(new BorderLayout());
         textPanel.setBackground(buttonColor);
-        textPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        textPanel.setBorder(BorderFactory.createEmptyBorder(10, 5, 5, 5));
 
         JLabel nameLabel = new JLabel(product.getName());
-        nameLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        nameLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.BOLD, 22));
 
         JLabel descriptionLabel = new JLabel(product.getDescription());
-        descriptionLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        descriptionLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.PLAIN, 15));
 
         JLabel priceLabel = new JLabel("$" + product.getPrice());
-        priceLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-        priceLabel.setForeground(Color.GREEN);
+        priceLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.PLAIN, 23));
+        priceLabel.setForeground(new Color(5,5, 5));
 
         textPanel.add(nameLabel, BorderLayout.NORTH);
         textPanel.add(descriptionLabel, BorderLayout.CENTER);
@@ -346,17 +357,48 @@ public class CartPage extends Page {
 
     private JPanel getProductQuantityPanel(Product product, int quantity) {
         JPanel panel = new JPanel();
+        Panel panel1 = new Panel();
+
+        panel1.setBorderPainted(true);
+        panel1.setArch(10);
+        panel1.setBackground(new Color(245, 245, 245));
+
         Button increaseButton = new Button("+");
         Button decreaseButton = new Button("-");
         JLabel amountLabel = new JLabel(String.valueOf(quantity), SwingConstants.CENTER);
 
-        panel.setBackground(buttonColor);
         panel.setBorder(new EmptyBorder(3, 3, 3, 3));
-        increaseButton.setFont(new Font("Arial", Font.PLAIN, 20));
+        panel.setBackground(buttonColor);
+
+        increaseButton.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.PLAIN, 20));
         increaseButton.setHorizontalTextPosition(SwingConstants.CENTER);
-        decreaseButton.setFont(new Font("Arial", Font.PLAIN, 26));
+        increaseButton.setBorder(new EmptyBorder(2, 6, 6, 6));
+        increaseButton.setOpaque(false);
+        decreaseButton.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.PLAIN, 26));
         decreaseButton.setHorizontalTextPosition(SwingConstants.CENTER);
-        decreaseButton.setBorder(new EmptyBorder(2, 5, 5, 6));
+        decreaseButton.setBorder(new EmptyBorder(1, 6, 6, 6));
+        decreaseButton.setOpaque(false);
+
+        amountLabel.setBorder(new EmptyBorder(4, 0, 0, 0));
+
+        GroupLayout layout1 = new GroupLayout(panel1);
+        panel1.setLayout(layout1);
+
+        layout1.setHorizontalGroup(
+                layout1.createSequentialGroup()
+                        .addContainerGap(5, 5)
+                        .addComponent(increaseButton, 30, 30, 30)
+                        .addComponent(amountLabel, 30, 100, 200)
+                        .addComponent(decreaseButton, 30, 30, 30)
+                        .addContainerGap(5, 5)
+        );
+
+        layout1.setVerticalGroup(
+                layout1.createParallelGroup()
+                        .addComponent(increaseButton, 30, 30, 30)
+                        .addComponent(amountLabel, 30, 30, 30)
+                        .addComponent(decreaseButton, 30, 30, 30)
+        );
 
         GroupLayout layout = new GroupLayout(panel);
         panel.setLayout(layout);
@@ -364,23 +406,23 @@ public class CartPage extends Page {
         layout.setHorizontalGroup(
                layout.createSequentialGroup()
                         .addContainerGap(5, Short.MAX_VALUE)
-                        .addComponent(increaseButton, 30, 30, 30)
-                        .addComponent(amountLabel, 30, 30, 30)
-                        .addComponent(decreaseButton, 30, 30, 30)
+                        .addComponent(panel1, 120, 120, 120)
                        .addGap(5)
         );
 
         layout.setVerticalGroup(
                 layout.createParallelGroup()
-                        .addComponent(increaseButton, 30, 30, 30)
-                        .addComponent(amountLabel, 30, 30, 30)
-                        .addComponent(decreaseButton, 30, 30, 30)
+                        .addComponent(panel1, 30, 30, 30)
         );
 
         increaseButton.addActionListener(e -> {
-            CartService.addToCart(product, 1);
-            amountLabel.setText(String.valueOf((Integer.parseUnsignedInt(amountLabel.getText()) + 1)));
-            updateCartPanel();
+            int response = CartService.addToCart(product, 1);
+            if (response == 0) {
+                amountLabel.setText(String.valueOf((Integer.parseUnsignedInt(amountLabel.getText()) + 1)));
+                updateCartPanel();
+            } else if (response == 1) {
+                new PopupMessage("Not enough stock MAX: " + product.getQuantity(), PopupMessage.Type.ERROR);
+            }
         });
         decreaseButton.addActionListener(e -> {
             CartService.removeFromCart(product, 1);

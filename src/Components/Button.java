@@ -7,6 +7,8 @@ import java.awt.event.MouseEvent;
 
 public class Button extends JButton {
 
+    private String cleanText;
+
     private boolean opaque = false;
     private boolean hoverable = true;
 
@@ -14,6 +16,7 @@ public class Button extends JButton {
     private boolean isHovered = false;
 
     private Color color = Color.WHITE;
+    private Color borderColor = new Color(175, 175, 175);
     private int arch = 20;
 
     public Button() {
@@ -69,8 +72,22 @@ public class Button extends JButton {
         setBorderPainted(opaque);
     }
 
+    @Override
+    public void setText(String text) {
+        cleanText = text;
+        super.setText("<html>" + text + "</html>");
+    }
+
+    public String getRawText() {
+        return cleanText;
+    }
+
     public void setHoverable(boolean hoverable) {
         this.hoverable = hoverable;
+    }
+
+    public void setBorderColor(Color color) {
+        this.borderColor = color;
     }
 
     @Override
@@ -102,7 +119,7 @@ public class Button extends JButton {
 
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            g2d.setColor(new Color(175, 175, 175));
+            g2d.setColor(borderColor);
             g2d.setStroke(new BasicStroke(1));
             if (arch != 0) {
                 g2d.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, arch, arch);

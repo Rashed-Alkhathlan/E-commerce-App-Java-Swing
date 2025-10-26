@@ -14,9 +14,8 @@ public class Cart {
     }
 
     public void removeProduct(Product product) {
-        UUID productId = product.getId();
         if (products.containsKey(product)) {
-            if (products.get(product) <= 1) {
+            if (products.get(product) == 1) {
                 totalPrice -= product.getPrice();
                 products.remove(product);
             } else {

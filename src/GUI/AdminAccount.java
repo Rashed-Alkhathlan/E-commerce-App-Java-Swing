@@ -19,7 +19,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class AdminAccount extends AccountPage {
@@ -35,12 +34,15 @@ public class AdminAccount extends AccountPage {
 
     private void setupAdminMenu() {
         menuPanel.addLabel("Admin Settings:", "SettingsImg");
-        menuPanel.addButton("Dashboard", "DashImg", e -> switchToPanel(DashboardPanel::new));
-        menuPanel.addButton("Manage managers", "ManImg", e -> switchToPanel(ManagersPanel::new));
-        menuPanel.addButton("Manage stores", "ProductsImg", e -> switchToPanel(StoresPanel::new));
+        menuPanel.addButton("Dashboard", "DashImg", e -> switchToPanel(DashboardPanel.class));
+        menuPanel.addButton("Manage managers", "ManImg", e -> switchToPanel(ManagersPanel.class));
+        menuPanel.addButton("Manage stores", "ProductsImg", e -> switchToPanel(StoresPanel.class));
+        menuPanel.addDivider();
+        menuPanel.addButton("Log Out", "ExitImg", e -> UsersService.logout());
+        menuPanel.addDivider();
     }
 
-    private class DashboardPanel extends Panel {
+    private class DashboardPanel extends JPanel {
 
         private final Table table = new Table();
         private final ScrollPane tableScrollPane = new ScrollPane(table);
@@ -71,8 +73,8 @@ public class AdminAccount extends AccountPage {
             totalStoresPanel.setAlignment(GroupLayout.Alignment.LEADING);
             totalStoresPanel.setArch(20);
             totalStoresPanel.setTitleLabel("Stores");
-            totalStoresPanel.setDescriptionLabel("Total: " + StoresService.getStoresCount());
-            totalStoresPanel.setValuesLabel("Total Products: " + ProductsService.getProductCount());
+            totalStoresPanel.setDescriptionLabel("Total: " + StoresService.getStoreCount());
+            totalStoresPanel.setValuesLabel("Total Products: " + ProductsService.getProductsCount());
 
             totalOrdersPanel.setAlignment(GroupLayout.Alignment.LEADING);
             totalOrdersPanel.setArch(20);
@@ -89,7 +91,7 @@ public class AdminAccount extends AccountPage {
             tablePanel.add(tableLabel, BorderLayout.NORTH);
             tablePanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-            tableLabel.setFont(new Font("SanSerif", Font.BOLD, 20));
+            tableLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.BOLD, 20));
             tableLabel.setForeground(new Color(102, 102, 102));
             tableLabel.setBorder(new EmptyBorder(5, 5, 5, 5));
             tableLabel.setHorizontalAlignment(SwingConstants.LEFT);
@@ -110,7 +112,7 @@ public class AdminAccount extends AccountPage {
                         dialog.addYesButtonAction(a -> {
                             dialog.dispose();
                             UsersService.deleteUser(user.getId());
-                            switchToPanel(DashboardPanel::new);
+                            switchToPanel(DashboardPanel.class);
                         });
                     }});
                 }
@@ -158,7 +160,7 @@ public class AdminAccount extends AccountPage {
         }
     }
 
-    private class ManagersPanel extends Panel {
+    private class ManagersPanel extends JPanel {
 
         private final Table table = new Table();
         private final ScrollPane tableScrollPane = new ScrollPane(table);
@@ -189,8 +191,8 @@ public class AdminAccount extends AccountPage {
             totalStoresPanel.setAlignment(GroupLayout.Alignment.LEADING);
             totalStoresPanel.setArch(20);
             totalStoresPanel.setTitleLabel("Stores");
-            totalStoresPanel.setDescriptionLabel("Total: " + StoresService.getStoresCount());
-            totalStoresPanel.setValuesLabel("Total Products: " + ProductsService.getProductCount());
+            totalStoresPanel.setDescriptionLabel("Total: " + StoresService.getStoreCount());
+            totalStoresPanel.setValuesLabel("Total Products: " + ProductsService.getProductsCount());
 
             totalOrdersPanel.setAlignment(GroupLayout.Alignment.LEADING);
             totalOrdersPanel.setArch(20);
@@ -207,7 +209,7 @@ public class AdminAccount extends AccountPage {
             tablePanel.add(tableLabel, BorderLayout.NORTH);
             tablePanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-            tableLabel.setFont(new Font("SanSerif", Font.BOLD, 20));
+            tableLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.BOLD, 20));
             tableLabel.setForeground(new Color(102, 102, 102));
             tableLabel.setBorder(new EmptyBorder(5, 5, 5, 5));
             tableLabel.setHorizontalAlignment(SwingConstants.LEFT);
@@ -227,7 +229,7 @@ public class AdminAccount extends AccountPage {
                     dialog.addYesButtonAction(a -> {
                         dialog.dispose();
                         UsersService.deleteUser(user.getId());
-                        switchToPanel(ManagersPanel::new);
+                        switchToPanel(ManagersPanel.class);
                     });
                 }});
             }
@@ -271,7 +273,7 @@ public class AdminAccount extends AccountPage {
         }
     }
 
-    private class StoresPanel extends Panel {
+    private class StoresPanel extends JPanel {
 
         private final Table table = new Table();
         private final ScrollPane tableScrollPane = new ScrollPane(table);
@@ -295,15 +297,15 @@ public class AdminAccount extends AccountPage {
         private void setupStatsCards() {
             totalUsersPanel.setAlignment(GroupLayout.Alignment.LEADING);
             totalUsersPanel.setArch(20);
-            totalUsersPanel.setTitleLabel("Stores");
-            totalUsersPanel.setDescriptionLabel("Total: " + StoresService.getStoresCount());
-            totalUsersPanel.setValuesLabel("Total Products: " + ProductsService.getProductCount());
+            totalUsersPanel.setTitleLabel("Products");
+            totalUsersPanel.setDescriptionLabel("Total Available: " + ProductsService.getProductsCount(StoreStatus.OPEN));
+            totalUsersPanel.setValuesLabel("Total Not Available: " + ProductsService.getProductsCount(StoreStatus.CLOSED));
 
             totalStoresPanel.setAlignment(GroupLayout.Alignment.LEADING);
             totalStoresPanel.setArch(20);
-            totalStoresPanel.setTitleLabel("Status");
-            totalStoresPanel.setDescriptionLabel("Open Stores: " + StoresService.getStoresCount(StoreStatus.OPEN));
-            totalStoresPanel.setValuesLabel("Closed Stores: " + StoresService.getStoresCount(StoreStatus.CLOSED));
+            totalStoresPanel.setTitleLabel("Stores");
+            totalStoresPanel.setDescriptionLabel("Open Stores: " + StoresService.getStoreCount(StoreStatus.OPEN));
+            totalStoresPanel.setValuesLabel("Closed Stores: " + StoresService.getStoreCount(StoreStatus.CLOSED));
 
             totalOrdersPanel.setAlignment(GroupLayout.Alignment.LEADING);
             totalOrdersPanel.setArch(20);
@@ -320,7 +322,7 @@ public class AdminAccount extends AccountPage {
             tablePanel.add(tableLabel, BorderLayout.NORTH);
             tablePanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-            tableLabel.setFont(new Font("SanSerif", Font.BOLD, 20));
+            tableLabel.setFont(new Font(UIManager.getFont("Label.font").getFontName(), Font.BOLD, 20));
             tableLabel.setForeground(new Color(102, 102, 102));
             tableLabel.setBorder(new EmptyBorder(5, 5, 5, 5));
             tableLabel.setHorizontalAlignment(SwingConstants.LEFT);
@@ -332,7 +334,7 @@ public class AdminAccount extends AccountPage {
                 }
             });
 
-            for (Store store : StoresService.getStores()) {
+            for (Store store : StoresService.getStores("", null)) {
                 Manager owner = StoresService.getStoreOwner(store.getId());
                 table.addRow(new Object[]{store.getName().isEmpty() ? "Name not set" : store.getName(), StoresService.getStoreProductCount(store.getId()), owner.getFirstName() + " " + owner.getLastName(), store.getCreationDate(), store.getStatus(), (ActionListener) e -> {
                     Dialog dialog = new Dialog("Warning", "<html>Continuing means deleting the Store and the corresponding Products. Are sure you want to proceed?</html>");
@@ -341,7 +343,7 @@ public class AdminAccount extends AccountPage {
                     dialog.addYesButtonAction(a -> {
                         dialog.dispose();
                         StoresService.deleteStore(store.getId());
-                        switchToPanel(StoresPanel::new);
+                        switchToPanel(StoresPanel.class);
                     });
                 }});
             }
