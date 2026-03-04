@@ -1,7 +1,5 @@
 package Objects;
 
-import Components.PopupMessage;
-import GUI.HomePage;
 import GUI.MyFrame;
 
 import java.util.UUID;
@@ -50,9 +48,9 @@ public class Main {
         System.setProperty("sun.java2d.opengl", "true");
         new Service();
         new MyFrame();
+        UsersService.login("0550818870", "Rashed123*");
         //UsersService.login("1234567890", "password123");
         //UsersService.login("0550881846", "Khaled123*");
-        UsersService.login("0550818870", "Rashed123*");
         //UsersService.login("05555555551", "Saeed@123");
     }
 }
